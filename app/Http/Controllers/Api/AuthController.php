@@ -16,7 +16,7 @@ class AuthController extends Controller
     #[OA\Post(
         path: '/api/login',
         operationId: 'login',
-        description: 'Authenticate a user with email and password and issue a Sanctum bearer token.',
+        description: 'Authenticate a user with email and password and issue a Sanctum bearer token. The token is set as an httpOnly cookie; in non-production environments it is also returned in the response body for testing.',
         tags: ['Authentication'],
         requestBody: new OA\RequestBody(
             required: true,
@@ -35,8 +35,8 @@ class AuthController extends Controller
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'message', type: 'string', example: 'Login successful'),
-                        new OA\Property(property: 'access_token', type: 'string', example: '1|abcdef1234567890...'),
                         new OA\Property(property: 'token_type', type: 'string', example: 'Bearer'),
+                        new OA\Property(property: 'access_token', type: 'string', example: '1|abcdef1234567890... (only present outside production)'),
                         new OA\Property(property: 'user', ref: '#/components/schemas/User'),
                     ]
                 )
@@ -74,18 +74,37 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
+        $responseData = [
             'message' => 'Login successful',
-            'access_token' => $token,
             'token_type' => 'Bearer',
             'user' => new UserResource($user),
-        ], 200);
+        ];
+
+        // Only expose the raw token in the body outside production,
+        // so Swagger "Try it out" still works during development.
+        if (! app()->environment('production')) {
+            $responseData['access_token'] = $token;
+        }
+
+        $response = response()->json($responseData, 200);
+
+        return $response->cookie(
+            'access_token',   // name
+            $token,           // value
+            60 * 24 * 7,      // minutes (7 days)
+            '/',              // path
+            null,             // domain
+            true,             // secure — HTTPS only
+            true,             // httpOnly — JS can't read it
+            false,            // raw
+            'Strict'          // sameSite
+        );
     }
 
     #[OA\Post(
         path: '/api/logout',
         operationId: 'logout',
-        description: 'Revoke the access token used to authenticate the current request.',
+        description: 'Revoke the access token used to authenticate the current request and clear the auth cookie.',
         security: [['bearerAuth' => []]],
         tags: ['Authentication'],
         responses: [
@@ -111,7 +130,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Logged out successfully',
-        ], 200);
+        ], 200)->cookie('access_token', '', -1);
     }
 
     #[OA\Get(
