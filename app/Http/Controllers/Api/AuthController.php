@@ -7,8 +7,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use OpenApi\Attributes as OA;
 
 class AuthController extends Controller
@@ -16,7 +15,7 @@ class AuthController extends Controller
     #[OA\Post(
         path: '/api/login',
         operationId: 'login',
-        description: 'Authenticate a user with email and password and issue a Sanctum bearer token. The token is set as an httpOnly cookie; in non-production environments it is also returned in the response body for testing.',
+        description: 'Authenticate a user with email and password using session-based (cookie) authentication.',
         tags: ['Authentication'],
         requestBody: new OA\RequestBody(
             required: true,
@@ -35,8 +34,6 @@ class AuthController extends Controller
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'message', type: 'string', example: 'Login successful'),
-                        new OA\Property(property: 'token_type', type: 'string', example: 'Bearer'),
-                        new OA\Property(property: 'access_token', type: 'string', example: '1|abcdef1234567890... (only present outside production)'),
                         new OA\Property(property: 'user', ref: '#/components/schemas/User'),
                     ]
                 )
@@ -62,50 +59,26 @@ class AuthController extends Controller
     )]
     public function login(LoginRequest $request): JsonResponse
     {
-        $credentials = $request->validated();
-
-        $user = User::where('email', $credentials['email'])->first();
-
-        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
+        if (! Auth::attempt($request->validated())) {
             return response()->json([
                 'message' => 'Invalid credentials',
             ], 401);
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        // Regenerate the session to prevent session fixation
+        $request->session()->regenerate();
 
-        $responseData = [
+        return response()->json([
             'message' => 'Login successful',
-            'token_type' => 'Bearer',
-            'user' => new UserResource($user),
-        ];
-
-        // Only expose the raw token in the body outside production,
-        // so Swagger "Try it out" still works during development.
-        if (! app()->environment('production')) {
-            $responseData['access_token'] = $token;
-        }
-
-        $response = response()->json($responseData, 200);
-
-        return $response->cookie(
-            'access_token',   // name
-            $token,           // value
-            60 * 24 * 7,      // minutes (7 days)
-            '/',              // path
-            null,             // domain
-            true,             // secure — HTTPS only
-            true,             // httpOnly — JS can't read it
-            false,            // raw
-            'Strict'          // sameSite
-        );
+            'user'    => new UserResource(Auth::user()),
+        ], 200);
     }
 
     #[OA\Post(
         path: '/api/logout',
         operationId: 'logout',
-        description: 'Revoke the access token used to authenticate the current request and clear the auth cookie.',
-        security: [['bearerAuth' => []]],
+        description: 'Log the user out and invalidate the session.',
+        security: [['cookieAuth' => []]],   // or just remove security if you prefer
         tags: ['Authentication'],
         responses: [
             new OA\Response(
@@ -126,18 +99,21 @@ class AuthController extends Controller
     )]
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        Auth::guard('web')->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return response()->json([
             'message' => 'Logged out successfully',
-        ], 200)->cookie('access_token', '', -1);
+        ], 200);
     }
 
     #[OA\Get(
         path: '/api/user',
         operationId: 'user',
         description: 'Get the currently authenticated user.',
-        security: [['bearerAuth' => []]],
+        security: [['cookieAuth' => []]],
         tags: ['Authentication'],
         responses: [
             new OA\Response(
