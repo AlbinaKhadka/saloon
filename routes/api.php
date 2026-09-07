@@ -1,23 +1,23 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\V1\BannerController;
+use App\Http\Controllers\Api\V1\ServiceController;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+// Public routes
+Route::post('/login', [AuthController::class, 'login']);
 
-
-Route::post('/login', [\App\Http\Controllers\Api\AuthController::class, 'login']);
-Route::post('/refresh', [\App\Http\Controllers\Api\AuthController::class, 'refresh']);
-
+// Authenticated routes
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/logout', [\App\Http\Controllers\Api\AuthController::class, 'logout']);
-    Route::get('/user', [\App\Http\Controllers\Api\AuthController::class, 'user']);
-});
 
-Route::prefix('v1')->group(function () {
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::apiResource('banners', \App\Http\Controllers\Api\V1\BannerController::class);
+    // Auth
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/user', [AuthController::class, 'user']);
+
+    // API v1
+    Route::prefix('v1')->group(function () {
+        Route::apiResource('banners', BannerController::class);
+        Route::apiResource('services', ServiceController::class);
     });
 });
