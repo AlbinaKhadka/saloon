@@ -73,8 +73,10 @@ class AuthController extends Controller
             ], 401);
         }
 
-        // Prevent session fixation
-        $request->session()->regenerate();
+        // Prevent session fixation if session middleware is active
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+        }
 
         return response()->json([
             'message' => 'Login successful',
@@ -103,8 +105,10 @@ class AuthController extends Controller
     {
         Auth::logout();
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        if ($request->hasSession()) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
 
         return response()->json([
             'message' => 'Logged out successfully',

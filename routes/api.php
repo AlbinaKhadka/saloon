@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\V1\ServiceController;
 use App\Http\Controllers\Api\V1\AboutController;
 use App\Http\Controllers\Api\V1\GalleryController;
 
-Route::post('/login', [AuthController::class, 'login']);
+Route::middleware('web')->post('/login', [AuthController::class, 'login']);
 
 // Public read-only endpoints for website visitors
 Route::prefix('v1')->group(function () {
