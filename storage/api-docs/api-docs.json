@@ -510,6 +510,293 @@
                 ]
             }
         },
+        "/api/v1/galleries": {
+            "get": {
+                "tags": [
+                    "Gallery"
+                ],
+                "description": "Get list of gallery items with optional category filtering",
+                "operationId": "getGalleries",
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "description": "Filter photos by category (e.g. Products, From Farm, Recipes, Lifestyle)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Gallery"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Gallery"
+                ],
+                "description": "Create gallery item(s). Supports single image (\"image\") or batch upload of multiple images (\"images[]\").",
+                "operationId": "storeGallery",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "status"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "category": {
+                                        "type": "string",
+                                        "example": "Products",
+                                        "nullable": true
+                                    },
+                                    "image": {
+                                        "description": "Single gallery image file",
+                                        "type": "string",
+                                        "format": "binary",
+                                        "nullable": true
+                                    },
+                                    "images": {
+                                        "description": "Batch array of image files to upload multiple images at once",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        },
+                                        "nullable": true
+                                    },
+                                    "status": {
+                                        "description": "0 = inactive, 1 = active",
+                                        "type": "integer",
+                                        "example": 1,
+                                        "enum": [
+                                            0,
+                                            1
+                                        ]
+                                    },
+                                    "orderby": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Gallery item(s) created successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/galleries/{gallery}": {
+            "get": {
+                "tags": [
+                    "Gallery"
+                ],
+                "description": "Get a single gallery photo item",
+                "operationId": "getGallery",
+                "parameters": [
+                    {
+                        "name": "gallery",
+                        "in": "path",
+                        "description": "Gallery ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Gallery"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Gallery item not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Gallery"
+                ],
+                "description": "Update a gallery item. We use POST with _method=PUT to support multipart/form-data for image upload in PHP.",
+                "operationId": "updateGallery",
+                "parameters": [
+                    {
+                        "name": "gallery",
+                        "in": "path",
+                        "description": "Gallery ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "status",
+                                    "_method"
+                                ],
+                                "properties": {
+                                    "_method": {
+                                        "description": "Method spoofing for PUT",
+                                        "type": "string",
+                                        "example": "PUT"
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "category": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "image": {
+                                        "description": "Gallery image file (optional on update)",
+                                        "type": "string",
+                                        "format": "binary",
+                                        "nullable": true
+                                    },
+                                    "status": {
+                                        "description": "0 = inactive, 1 = active",
+                                        "type": "integer",
+                                        "enum": [
+                                            0,
+                                            1
+                                        ]
+                                    },
+                                    "orderby": {
+                                        "type": "integer",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Gallery item updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Gallery"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Gallery item not found"
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Gallery"
+                ],
+                "description": "Delete a gallery item",
+                "operationId": "deleteGallery",
+                "parameters": [
+                    {
+                        "name": "gallery",
+                        "in": "path",
+                        "description": "Gallery ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Gallery item deleted successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Gallery item not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/services": {
             "get": {
                 "tags": [
@@ -951,6 +1238,49 @@
                 },
                 "type": "object"
             },
+            "Gallery": {
+                "title": "Gallery",
+                "description": "Gallery item model with photo and category info",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Interior view",
+                        "nullable": true
+                    },
+                    "category": {
+                        "type": "string",
+                        "example": "Products",
+                        "nullable": true
+                    },
+                    "image": {
+                        "type": "string",
+                        "example": "http://localhost:8000/storage/galleries/image.jpg"
+                    },
+                    "status": {
+                        "description": "0=inactive, 1=active",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "orderby": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
             "Service": {
                 "title": "Service",
                 "description": "Service model",
@@ -1035,6 +1365,10 @@
         {
             "name": "Banners",
             "description": "Banners"
+        },
+        {
+            "name": "Gallery",
+            "description": "Gallery"
         },
         {
             "name": "Services",
