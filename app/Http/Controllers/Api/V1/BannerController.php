@@ -7,7 +7,7 @@ use App\Http\Requests\StoreBannerRequest;
 use App\Http\Requests\UpdateBannerRequest;
 use App\Http\Resources\BannerResource;
 use App\Models\Banner;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Storage;
 use OpenApi\Attributes as OA;
@@ -17,9 +17,25 @@ class BannerController extends Controller
     #[OA\Get(
         path: '/api/v1/banners',
         operationId: 'getBanners',
-        description: 'Get list of all banners',
+        description: 'Get list of banners with optional status filtering and optional pagination.',
         security: [['bearerAuth' => []]],
         tags: ['Banners'],
+        parameters: [
+            new OA\Parameter(
+                name: 'status',
+                description: 'Filter by status: 1 or "active", 0 or "inactive"',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'string')
+            ),
+            new OA\Parameter(
+                name: 'per_page',
+                description: 'Number of items per page. If omitted, loads all matching banners.',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'integer')
+            )
+        ],
         responses: [
             new OA\Response(
                 response: 200,
@@ -29,9 +45,27 @@ class BannerController extends Controller
             new OA\Response(response: 401, description: 'Unauthenticated')
         ]
     )]
-    public function index(): AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection
     {
-        $banners = Banner::orderBy('orderby', 'asc')->get();
+        $query = Banner::query();
+
+        if ($request->has('status') && $request->status !== null && $request->status !== '') {
+            $status = strtolower((string) $request->status);
+            if ($status === 'active' || $status === '1') {
+                $query->where('status', 1);
+            } elseif ($status === 'inactive' || $status === '0') {
+                $query->where('status', 0);
+            }
+        }
+
+        $query->orderBy('orderby', 'asc')->orderBy('id', 'desc');
+
+        if ($request->filled('per_page') && is_numeric($request->per_page) && (int) $request->per_page > 0) {
+            $banners = $query->paginate((int) $request->per_page);
+        } else {
+            $banners = $query->get();
+        }
+
         return BannerResource::collection($banners);
     }
 
@@ -51,6 +85,7 @@ class BannerController extends Controller
                         new OA\Property(property: 'title', type: 'string', nullable: true),
                         new OA\Property(property: 'slug', type: 'string', nullable: true),
                         new OA\Property(property: 'image', description: 'Banner image file', type: 'string', format: 'binary'),
+                        new OA\Property(property: 'url', description: 'Target link URL for the banner', type: 'string', nullable: true),
                         new OA\Property(property: 'status', description: '0 = inactive, 1 = active', type: 'integer', enum: [0, 1]),
                         new OA\Property(property: 'orderby', type: 'integer', nullable: true),
                     ]
@@ -116,6 +151,7 @@ class BannerController extends Controller
                         new OA\Property(property: 'title', type: 'string', nullable: true),
                         new OA\Property(property: 'slug', type: 'string', nullable: true),
                         new OA\Property(property: 'image', description: 'Banner image file (optional on update)', type: 'string', format: 'binary', nullable: true),
+                        new OA\Property(property: 'url', description: 'Target link URL for the banner', type: 'string', nullable: true),
                         new OA\Property(property: 'status', description: '0 = inactive, 1 = active', type: 'integer', enum: [0, 1]),
                         new OA\Property(property: 'orderby', type: 'integer', nullable: true),
                     ]

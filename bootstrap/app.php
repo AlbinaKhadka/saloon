@@ -17,6 +17,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->statefulApi();
 
         $middleware->trustProxies(at: '*');
+
+        $middleware->validateCsrfTokens(except: [
+            'api/login',
+            'login',
+            'api/logout',
+            'logout',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
 

@@ -7,10 +7,12 @@ use App\Http\Controllers\Api\V1\ServiceController;
 use App\Http\Controllers\Api\V1\AboutController;
 use App\Http\Controllers\Api\V1\GalleryController;
 
-Route::middleware('web')->post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login']);
 
 // Public read-only endpoints for website visitors
 Route::prefix('v1')->group(function () {
+    Route::get('banners', [BannerController::class, 'index']);
+    Route::get('banners/{banner}', [BannerController::class, 'show']);
     Route::get('galleries', [GalleryController::class, 'index']);
     Route::get('galleries/{gallery}', [GalleryController::class, 'show']);
 });
@@ -21,7 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
 
     Route::prefix('v1')->group(function () {
-        Route::apiResource('banners', BannerController::class);
+        Route::apiResource('banners', BannerController::class)->except(['index', 'show']);
         Route::apiResource('services', ServiceController::class);
         Route::apiResource('abouts', AboutController::class);
         Route::apiResource('galleries', GalleryController::class)->except(['index', 'show']);

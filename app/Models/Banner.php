@@ -15,6 +15,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: "title", type: "string", example: "Summer Sale", nullable: true),
         new OA\Property(property: "slug", type: "string", example: "summer-sale", nullable: true),
         new OA\Property(property: "image", type: "string", example: "http://localhost/storage/banners/image.jpg"),
+        new OA\Property(property: "url", type: "string", example: "https://example.com/promo", nullable: true),
         new OA\Property(property: "status", description: "0=inactive, 1=active", type: "integer", example: 1),
         new OA\Property(property: "orderby", type: "integer", example: 1, nullable: true),
         new OA\Property(property: "created_at", type: "string", format: "date-time"),
@@ -29,6 +30,7 @@ class Banner extends Model
         'title',
         'slug',
         'image',
+        'url',
         'status',
         'orderby',
     ];

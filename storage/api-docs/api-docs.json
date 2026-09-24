@@ -244,8 +244,28 @@
                 "tags": [
                     "Banners"
                 ],
-                "description": "Get list of all banners",
+                "description": "Get list of banners with optional status filtering and optional pagination.",
                 "operationId": "getBanners",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by status: 1 or \"active\", 0 or \"inactive\"",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page. If omitted, loads all matching banners.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successful operation",
@@ -298,6 +318,11 @@
                                         "description": "Banner image file",
                                         "type": "string",
                                         "format": "binary"
+                                    },
+                                    "url": {
+                                        "description": "Target link URL for the banner",
+                                        "type": "string",
+                                        "nullable": true
                                     },
                                     "status": {
                                         "description": "0 = inactive, 1 = active",
@@ -428,6 +453,11 @@
                                         "description": "Banner image file (optional on update)",
                                         "type": "string",
                                         "format": "binary",
+                                        "nullable": true
+                                    },
+                                    "url": {
+                                        "description": "Target link URL for the banner",
+                                        "type": "string",
                                         "nullable": true
                                     },
                                     "status": {
@@ -1216,6 +1246,11 @@
                     "image": {
                         "type": "string",
                         "example": "http://localhost/storage/banners/image.jpg"
+                    },
+                    "url": {
+                        "type": "string",
+                        "example": "https://example.com/promo",
+                        "nullable": true
                     },
                     "status": {
                         "description": "0=inactive, 1=active",
