@@ -50,6 +50,10 @@
                                             "type": "string",
                                             "example": "Login successful"
                                         },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1|eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+                                        },
                                         "user": {
                                             "$ref": "#/components/schemas/User"
                                         }

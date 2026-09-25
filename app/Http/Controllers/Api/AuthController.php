@@ -49,6 +49,11 @@ class AuthController extends Controller
                             example: 'Login successful'
                         ),
                         new OA\Property(
+                            property: 'token',
+                            type: 'string',
+                            example: '1|eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...'
+                        ),
+                        new OA\Property(
                             property: 'user',
                             ref: '#/components/schemas/User'
                         ),
@@ -73,14 +78,20 @@ class AuthController extends Controller
             ], 401);
         }
 
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
         // Prevent session fixation if session middleware is active
         if ($request->hasSession()) {
             $request->session()->regenerate();
         }
 
+        $token = $user->createToken('auth_token')->plainTextToken;
+
         return response()->json([
             'message' => 'Login successful',
-            'user' => new UserResource(Auth::user()),
+            'token' => $token,
+            'user' => new UserResource($user),
         ], 200);
     }
 
