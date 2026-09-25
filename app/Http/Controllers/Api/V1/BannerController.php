@@ -45,7 +45,7 @@ class BannerController extends Controller
             new OA\Response(response: 401, description: 'Unauthenticated')
         ]
     )]
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(Request $request): JsonResponse
     {
         $query = Banner::query();
 
@@ -61,12 +61,31 @@ class BannerController extends Controller
         $query->orderBy('orderby', 'asc')->orderBy('id', 'desc');
 
         if ($request->filled('per_page') && is_numeric($request->per_page) && (int) $request->per_page > 0) {
-            $banners = $query->paginate((int) $request->per_page);
-        } else {
-            $banners = $query->get();
+            $perPage = (int) $request->per_page;
+            $banners = $query->paginate($perPage);
+
+            return response()->json([
+                'message' => 'Banner List',
+                'data' => [
+                    'items' => BannerResource::collection($banners->items()),
+                    'page' => $banners->currentPage(),
+                    'total_page' => $banners->lastPage(),
+                    'total_items' => $banners->total(),
+                ],
+                'success' => true,
+            ], 200);
         }
 
-        return BannerResource::collection($banners);
+        $banners = $query->get();
+
+        return response()->json([
+            'message' => 'Banner List',
+            'data' => [
+                'items' => BannerResource::collection($banners),
+                'total_items' => $banners->count(),
+            ],
+            'success' => true,
+        ], 200);
     }
 
     #[OA\Post(
