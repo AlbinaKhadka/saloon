@@ -7,10 +7,33 @@ use App\Http\Controllers\Api\V1\ServiceController;
 use App\Http\Controllers\Api\V1\AboutController;
 use App\Http\Controllers\Api\V1\GalleryController;
 
+use Illuminate\Support\Facades\Artisan;
+
 Route::post('/login', [AuthController::class, 'login']);
+
+Route::get('/run-migration', function () {
+    Artisan::call('migrate', ['--force' => true]);
+    Artisan::call('storage:link', ['--force' => true]);
+    Artisan::call('config:clear');
+
+    return response()->json([
+        'message' => 'Migrations and storage link executed successfully!',
+        'output' => Artisan::output(),
+    ]);
+});
 
 // Public read-only endpoints for website visitors
 Route::prefix('v1')->group(function () {
+    Route::get('run-migration', function () {
+        Artisan::call('migrate', ['--force' => true]);
+        Artisan::call('storage:link', ['--force' => true]);
+        Artisan::call('config:clear');
+
+        return response()->json([
+            'message' => 'Migrations and storage link executed successfully!',
+            'output' => Artisan::output(),
+        ]);
+    });
     Route::get('banners', [BannerController::class, 'index']);
     Route::get('banners/{banner}', [BannerController::class, 'show']);
     Route::get('galleries', [GalleryController::class, 'index']);
