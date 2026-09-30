@@ -49,11 +49,6 @@ class AuthController extends Controller
                             example: 'Login successful'
                         ),
                         new OA\Property(
-                            property: 'token',
-                            type: 'string',
-                            example: '1|eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...'
-                        ),
-                        new OA\Property(
                             property: 'user',
                             ref: '#/components/schemas/User'
                         ),
@@ -86,11 +81,8 @@ class AuthController extends Controller
             $request->session()->regenerate();
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-
         return response()->json([
             'message' => 'Login successful',
-            'token' => $token,
             'user' => new UserResource($user),
         ], 200);
     }
