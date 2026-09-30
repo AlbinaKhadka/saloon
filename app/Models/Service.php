@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
@@ -12,6 +14,7 @@ use OpenApi\Attributes as OA;
     description: "Service model",
     properties: [
         new OA\Property(property: "id", type: "integer", example: 1),
+        new OA\Property(property: "service_category_id", type: "integer", example: 1),
         new OA\Property(property: "title", type: "string", example: "Hair Cut"),
         new OA\Property(property: "slug", type: "string", example: "hair-cut"),
         new OA\Property(property: "description", type: "string", example: "Professional hair cutting", nullable: true),
@@ -27,6 +30,7 @@ use OpenApi\Attributes as OA;
 class Service extends Model
 {
     protected $fillable = [
+        'service_category_id',
         'title',
         'slug',
         'description',
@@ -38,14 +42,19 @@ class Service extends Model
     ];
 
     protected $casts = [
-        'price'    => 'decimal:2',
-        'status'   => 'integer',
-        'duration' => 'integer',
-        'orderby'  => 'integer',
+        'service_category_id' => 'integer',
+        'price'               => 'decimal:2',
+        'status'              => 'integer',
+        'duration'            => 'integer',
+        'orderby'             => 'integer',
     ];
 
-    // Automatically return full URL for image
     protected $appends = ['image_url'];
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(ServiceCategory::class, 'service_category_id');
+    }
 
     public function getImageUrlAttribute(): string
     {
@@ -54,13 +63,47 @@ class Service extends Model
             : '';
     }
 
-    // Delete image file when model is deleted
-    protected static function booted()
+    protected static function booted(): void
     {
+        static::creating(function (Service $service) {
+            if (empty($service->slug) && ! empty($service->title)) {
+                $service->slug = static::generateCategoryScopedSlug($service->title, $service->service_category_id);
+            }
+        });
+
+        static::updating(function (Service $service) {
+            if ($service->isDirty('title') && ! $service->isDirty('slug')) {
+                $service->slug = static::generateCategoryScopedSlug(
+                    $service->title,
+                    $service->service_category_id,
+                    $service->id
+                );
+            }
+        });
+
         static::deleting(function (Service $service) {
             if ($service->image && Storage::disk('public')->exists($service->image)) {
                 Storage::disk('public')->delete($service->image);
             }
         });
+    }
+
+    public static function generateCategoryScopedSlug(string $title, int $categoryId, ?int $ignoreId = null): string
+    {
+        $baseSlug = Str::slug($title);
+        $slug = $baseSlug;
+        $count = 2;
+
+        while (
+            static::where('service_category_id', $categoryId)
+                ->where('slug', $slug)
+                ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
+                ->exists()
+        ) {
+            $slug = "{$baseSlug}-{$count}";
+            $count++;
+        }
+
+        return $slug;
     }
 }
