@@ -14,12 +14,13 @@ class StoreBannerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => 'nullable|string|max:255',
-            'slug' => 'nullable|string|max:255|unique:banners,slug',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
-            'url' => 'nullable|string|max:2048',
-            'status' => 'required|in:0,1',
-            'orderby' => 'nullable|integer',
+            'title'       => 'nullable|string|max:255',
+            'slug'        => 'nullable|string|max:255|unique:banners,slug',
+            'description' => 'nullable|string',
+            'image'       => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+            'url'         => 'nullable|string|max:2048',
+            'status'      => 'required|in:0,1',
+            'orderby'     => 'nullable|integer',
         ];
     }
 }

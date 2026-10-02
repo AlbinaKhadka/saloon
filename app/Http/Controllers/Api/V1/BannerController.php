@@ -9,7 +9,6 @@ use App\Http\Resources\BannerResource;
 use App\Models\Banner;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Storage;
 use OpenApi\Attributes as OA;
 
@@ -104,6 +103,7 @@ class BannerController extends Controller
                     properties: [
                         new OA\Property(property: 'title', type: 'string', nullable: true),
                         new OA\Property(property: 'slug', type: 'string', nullable: true),
+                        new OA\Property(property: 'description', type: 'string', nullable: true),
                         new OA\Property(property: 'image', description: 'Banner image file', type: 'string', format: 'binary'),
                         new OA\Property(property: 'url', description: 'Target link URL for the banner', type: 'string', nullable: true),
                         new OA\Property(property: 'status', description: '0 = inactive, 1 = active', type: 'integer', enum: [0, 1]),
@@ -170,6 +170,7 @@ class BannerController extends Controller
                         new OA\Property(property: '_method', description: 'Method spoofing for PUT', type: 'string', example: 'PUT'),
                         new OA\Property(property: 'title', type: 'string', nullable: true),
                         new OA\Property(property: 'slug', type: 'string', nullable: true),
+                        new OA\Property(property: 'description', type: 'string', nullable: true),
                         new OA\Property(property: 'image', description: 'Banner image file (optional on update)', type: 'string', format: 'binary', nullable: true),
                         new OA\Property(property: 'url', description: 'Target link URL for the banner', type: 'string', nullable: true),
                         new OA\Property(property: 'status', description: '0 = inactive, 1 = active', type: 'integer', enum: [0, 1]),

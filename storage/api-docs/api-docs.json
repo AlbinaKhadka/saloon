@@ -1,8 +1,8 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "Salon SaaS API",
-        "description": "API for salon booking, appointments, staff, and billing management",
+        "title": "Saloon Project",
+        "description": "",
         "version": "1.0.0"
     },
     "servers": [
@@ -324,6 +324,10 @@
                                         "type": "string",
                                         "nullable": true
                                     },
+                                    "description": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
                                     "image": {
                                         "description": "Banner image file",
                                         "type": "string",
@@ -456,6 +460,10 @@
                                         "nullable": true
                                     },
                                     "slug": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "description": {
                                         "type": "string",
                                         "nullable": true
                                     },
@@ -1507,6 +1515,11 @@
                         "example": "summer-sale",
                         "nullable": true
                     },
+                    "description": {
+                        "type": "string",
+                        "example": "Get 50% discount on all hair styling services",
+                        "nullable": true
+                    },
                     "image": {
                         "type": "string",
                         "example": "http://localhost/storage/banners/image.jpg"
@@ -1683,11 +1696,11 @@
             }
         },
         "securitySchemes": {
-            "bearerAuth": {
-                "type": "http",
-                "description": "Enter your Sanctum token",
-                "bearerFormat": "JWT",
-                "scheme": "bearer"
+            "sanctumCookie": {
+                "type": "apiKey",
+                "description": "Laravel Sanctum session cookie authentication",
+                "name": "laravel_session",
+                "in": "cookie"
             },
             "cookieAuth": {
                 "type": "apiKey",
