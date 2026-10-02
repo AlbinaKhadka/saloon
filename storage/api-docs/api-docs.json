@@ -5,6 +5,16 @@
         "description": "API for salon booking, appointments, staff, and billing management",
         "version": "1.0.0"
     },
+    "servers": [
+        {
+            "url": "http://127.0.0.1:8000",
+            "description": "Local Development Server"
+        },
+        {
+            "url": "https://saloon-rx72.onrender.com",
+            "description": "Live Production Server (Render)"
+        }
+    ],
     "paths": {
         "/api/login": {
             "post": {
