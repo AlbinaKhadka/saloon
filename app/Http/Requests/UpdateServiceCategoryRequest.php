@@ -17,7 +17,7 @@ class UpdateServiceCategoryRequest extends FormRequest
             'name'    => ['sometimes', 'required', 'string', 'max:255'],
             'icon'    => ['nullable'],
             'orderby' => ['nullable', 'integer'],
-            'status'  => ['nullable'],
+            'status'  => ['nullable', 'boolean'],
         ];
     }
 }

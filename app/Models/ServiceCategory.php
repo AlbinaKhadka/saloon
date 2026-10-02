@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use OpenApi\Attributes as OA;
 
@@ -16,7 +15,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: "id", type: "integer", example: 1),
         new OA\Property(property: "name", type: "string", example: "Hair Care"),
         new OA\Property(property: "slug", type: "string", example: "hair-care"),
-        new OA\Property(property: "icon", type: "string", example: "http://localhost/storage/service-categories/icon.jpg", nullable: true),
+        new OA\Property(property: "icon", type: "string", example: "http://localhost/storage/service_categories/icon.jpg", nullable: true),
         new OA\Property(property: "orderby", type: "integer", example: 1, nullable: true),
         new OA\Property(property: "status", type: "boolean", example: true),
         new OA\Property(property: "created_at", type: "string", format: "date-time"),
@@ -43,23 +42,6 @@ class ServiceCategory extends Model
         return $this->hasMany(Service::class, 'service_category_id');
     }
 
-    public function getIconUrlAttribute(): ?string
-    {
-        if (! $this->icon) {
-            return null;
-        }
-
-        if (Str::startsWith($this->icon, ['http://', 'https://'])) {
-            return $this->icon;
-        }
-
-        if (Storage::disk('public')->exists($this->icon)) {
-            return asset('storage/' . $this->icon);
-        }
-
-        return $this->icon;
-    }
-
     protected static function booted(): void
     {
         static::creating(function (ServiceCategory $category) {
@@ -71,12 +53,6 @@ class ServiceCategory extends Model
         static::updating(function (ServiceCategory $category) {
             if ($category->isDirty('name')) {
                 $category->slug = static::generateUniqueSlug($category->name, $category->id);
-            }
-        });
-
-        static::deleting(function (ServiceCategory $category) {
-            if ($category->icon && Storage::disk('public')->exists($category->icon)) {
-                Storage::disk('public')->delete($category->icon);
             }
         });
     }

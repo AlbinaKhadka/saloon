@@ -17,7 +17,7 @@ class ServiceController extends Controller
     #[OA\Get(
         path: '/api/v1/services',
         operationId: 'getServices',
-        description: 'Get list of services with optional category filtering, status filtering, and pagination.',
+        description: 'Get list of all services with optional status/category filtering and pagination.',
         tags: ['Services'],
         parameters: [
             new OA\Parameter(name: 'category_id', description: 'Filter by category ID', in: 'query', required: false, schema: new OA\Schema(type: 'integer')),
@@ -42,7 +42,7 @@ class ServiceController extends Controller
                                 ),
                                 new OA\Property(property: 'page', type: 'integer', example: 1, nullable: true),
                                 new OA\Property(property: 'total_page', type: 'integer', example: 1, nullable: true),
-                                new OA\Property(property: 'total_items', type: 'integer', example: 10)
+                                new OA\Property(property: 'total_items', type: 'integer', example: 15)
                             ]
                         ),
                         new OA\Property(property: 'success', type: 'boolean', example: true)
@@ -56,7 +56,7 @@ class ServiceController extends Controller
         $query = Service::with('category');
 
         if ($request->has('category_id') && $request->category_id !== null && $request->category_id !== '') {
-            $query->where('service_category_id', $request->category_id);
+            $query->where('service_category_id', $request->query('category_id'));
         }
 
         if ($request->has('status') && $request->status !== null && $request->status !== '') {
@@ -141,9 +141,7 @@ class ServiceController extends Controller
         $service = Service::create($data);
         $service->load('category');
 
-        return (new ServiceResource($service))
-            ->response()
-            ->setStatusCode(201);
+        return response()->json(new ServiceResource($service), 201);
     }
 
     #[OA\Get(
@@ -163,7 +161,7 @@ class ServiceController extends Controller
     {
         $service->load('category');
 
-        return (new ServiceResource($service))->response();
+        return response()->json(new ServiceResource($service), 200);
     }
 
     #[OA\Post(
@@ -214,8 +212,9 @@ class ServiceController extends Controller
         }
 
         $service->update($data);
+        $service->load('category');
 
-        return (new ServiceResource($service->fresh(['category'])))->response();
+        return response()->json(new ServiceResource($service->fresh(['category'])), 200);
     }
 
     #[OA\Delete(

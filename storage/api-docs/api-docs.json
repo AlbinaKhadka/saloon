@@ -933,7 +933,7 @@
                                         "example": "Hair Styling"
                                     },
                                     "icon": {
-                                        "description": "Icon image file or URL/class string",
+                                        "description": "Category icon string (class/URL) or image file upload",
                                         "type": "string",
                                         "format": "binary",
                                         "nullable": true
@@ -1017,7 +1017,7 @@
                 "tags": [
                     "Service Categories"
                 ],
-                "description": "Update a service category. We use POST with _method=PUT to support multipart/form-data for icon uploads in PHP.",
+                "description": "Update a service category. Uses POST with _method=PUT for file uploads.",
                 "operationId": "updateServiceCategory",
                 "parameters": [
                     {
@@ -1050,7 +1050,7 @@
                                         "nullable": true
                                     },
                                     "icon": {
-                                        "description": "Icon image file or URL/class string",
+                                        "description": "Category icon string (class/URL) or image file upload",
                                         "type": "string",
                                         "format": "binary",
                                         "nullable": true
@@ -1151,7 +1151,7 @@
                 "tags": [
                     "Services"
                 ],
-                "description": "Get list of services with optional category filtering, status filtering, and pagination.",
+                "description": "Get list of all services with optional status/category filtering and pagination.",
                 "operationId": "getServices",
                 "parameters": [
                     {
@@ -1213,7 +1213,7 @@
                                                 },
                                                 "total_items": {
                                                     "type": "integer",
-                                                    "example": 10
+                                                    "example": 15
                                                 }
                                             },
                                             "type": "object"
@@ -1756,7 +1756,7 @@
                     },
                     "icon": {
                         "type": "string",
-                        "example": "http://localhost/storage/service-categories/icon.jpg",
+                        "example": "http://localhost/storage/service_categories/icon.jpg",
                         "nullable": true
                     },
                     "orderby": {

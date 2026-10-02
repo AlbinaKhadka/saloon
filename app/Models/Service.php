@@ -66,13 +66,13 @@ class Service extends Model
     protected static function booted(): void
     {
         static::creating(function (Service $service) {
-            if (empty($service->slug) && ! empty($service->title)) {
+            if (! empty($service->title)) {
                 $service->slug = static::generateCategoryScopedSlug($service->title, $service->service_category_id);
             }
         });
 
         static::updating(function (Service $service) {
-            if ($service->isDirty('title') && ! $service->isDirty('slug')) {
+            if ($service->isDirty('title')) {
                 $service->slug = static::generateCategoryScopedSlug(
                     $service->title,
                     $service->service_category_id,

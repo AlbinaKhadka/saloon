@@ -17,7 +17,7 @@ class StoreServiceCategoryRequest extends FormRequest
             'name'    => ['required', 'string', 'max:255'],
             'icon'    => ['nullable'],
             'orderby' => ['nullable', 'integer'],
-            'status'  => ['nullable'],
+            'status'  => ['nullable', 'boolean'],
         ];
     }
 }
