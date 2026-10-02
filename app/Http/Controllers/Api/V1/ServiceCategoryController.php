@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateServiceCategoryRequest;
 use App\Http\Resources\ServiceCategoryResource;
 use App\Models\ServiceCategory;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 class ServiceCategoryController extends Controller
@@ -15,29 +16,92 @@ class ServiceCategoryController extends Controller
     #[OA\Get(
         path: '/api/v1/service-categories',
         operationId: 'getServiceCategories',
-        description: 'Get list of service categories',
+        description: 'Get list of service categories with optional status filtering and optional pagination.',
         tags: ['Service Categories'],
+        parameters: [
+            new OA\Parameter(
+                name: 'status',
+                description: 'Filter by status: 1/true or "active", 0/false or "inactive"',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'string')
+            ),
+            new OA\Parameter(
+                name: 'per_page',
+                description: 'Number of items per page. If omitted, loads all matching service categories.',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'integer')
+            )
+        ],
         responses: [
             new OA\Response(
                 response: 200,
                 description: 'Successful operation',
                 content: new OA\JsonContent(
                     properties: [
+                        new OA\Property(property: 'message', type: 'string', example: 'Service Category List'),
                         new OA\Property(
                             property: 'data',
-                            type: 'array',
-                            items: new OA\Items(ref: '#/components/schemas/ServiceCategory')
+                            type: 'object',
+                            properties: [
+                                new OA\Property(
+                                    property: 'items',
+                                    type: 'array',
+                                    items: new OA\Items(ref: '#/components/schemas/ServiceCategory')
+                                ),
+                                new OA\Property(property: 'page', type: 'integer', example: 1, nullable: true),
+                                new OA\Property(property: 'total_page', type: 'integer', example: 1, nullable: true),
+                                new OA\Property(property: 'total_items', type: 'integer', example: 5)
+                            ]
                         ),
+                        new OA\Property(property: 'success', type: 'boolean', example: true)
                     ]
                 )
             ),
         ]
     )]
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $categories = ServiceCategory::orderBy('orderby')->paginate(15);
+        $query = ServiceCategory::query();
 
-        return ServiceCategoryResource::collection($categories)->response();
+        if ($request->has('status') && $request->status !== null && $request->status !== '') {
+            $status = strtolower((string) $request->status);
+            if ($status === 'active' || $status === '1' || $status === 'true') {
+                $query->where('status', true);
+            } elseif ($status === 'inactive' || $status === '0' || $status === 'false') {
+                $query->where('status', false);
+            }
+        }
+
+        $query->orderBy('orderby', 'asc')->orderBy('id', 'desc');
+
+        if ($request->filled('per_page') && is_numeric($request->per_page) && (int) $request->per_page > 0) {
+            $perPage = (int) $request->per_page;
+            $categories = $query->paginate($perPage);
+
+            return response()->json([
+                'message' => 'Service Category List',
+                'data' => [
+                    'items' => ServiceCategoryResource::collection($categories->items()),
+                    'page' => $categories->currentPage(),
+                    'total_page' => $categories->lastPage(),
+                    'total_items' => $categories->total(),
+                ],
+                'success' => true,
+            ], 200);
+        }
+
+        $categories = $query->get();
+
+        return response()->json([
+            'message' => 'Service Category List',
+            'data' => [
+                'items' => ServiceCategoryResource::collection($categories),
+                'total_items' => $categories->count(),
+            ],
+            'success' => true,
+        ], 200);
     }
 
     #[OA\Post(

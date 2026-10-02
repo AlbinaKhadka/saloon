@@ -843,8 +843,28 @@
                 "tags": [
                     "Service Categories"
                 ],
-                "description": "Get list of service categories",
+                "description": "Get list of service categories with optional status filtering and optional pagination.",
                 "operationId": "getServiceCategories",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by status: 1/true or \"active\", 0/false or \"inactive\"",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page. If omitted, loads all matching service categories.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successful operation",
@@ -852,11 +872,38 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Service Category List"
+                                        },
                                         "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/ServiceCategory"
-                                            }
+                                            "properties": {
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/ServiceCategory"
+                                                    }
+                                                },
+                                                "page": {
+                                                    "type": "integer",
+                                                    "example": 1,
+                                                    "nullable": true
+                                                },
+                                                "total_page": {
+                                                    "type": "integer",
+                                                    "example": 1,
+                                                    "nullable": true
+                                                },
+                                                "total_items": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
                                         }
                                     },
                                     "type": "object"

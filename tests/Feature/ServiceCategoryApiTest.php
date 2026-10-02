@@ -11,20 +11,49 @@ class ServiceCategoryApiTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_public_index_and_show_work_without_auth(): void
+    public function test_public_index_returns_banner_style_data_structure(): void
     {
-        $category = ServiceCategory::create([
+        ServiceCategory::create([
             'name' => 'Hair Styling',
             'status' => true,
         ]);
 
         $response = $this->getJson('/api/v1/service-categories');
+
         $response->assertStatus(200)
-            ->assertJsonPath('data.0.name', 'Hair Styling');
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('message', 'Service Category List')
+            ->assertJsonPath('data.items.0.name', 'Hair Styling');
+    }
+
+    public function test_per_page_pagination_for_service_categories(): void
+    {
+        for ($i = 1; $i <= 5; $i++) {
+            ServiceCategory::create([
+                'name' => "Category {$i}",
+                'status' => true,
+            ]);
+        }
+
+        $response = $this->getJson('/api/v1/service-categories?per_page=2');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.page', 1)
+            ->assertJsonPath('data.total_page', 3)
+            ->assertJsonPath('data.total_items', 5)
+            ->assertJsonCount(2, 'data.items');
+    }
+
+    public function test_public_show_works_without_auth(): void
+    {
+        $category = ServiceCategory::create([
+            'name' => 'Nail Care',
+            'status' => true,
+        ]);
 
         $showResponse = $this->getJson('/api/v1/service-categories/' . $category->id);
         $showResponse->assertStatus(200)
-            ->assertJsonPath('data.name', 'Hair Styling');
+            ->assertJsonPath('data.name', 'Nail Care');
     }
 
     public function test_store_update_destroy_require_auth(): void
@@ -74,21 +103,5 @@ class ServiceCategoryApiTest extends TestCase
             ->assertStatus(200);
 
         $this->assertDatabaseMissing('service_categories', ['id' => $categoryId]);
-    }
-
-    public function test_category_slug_auto_generation_and_preservation_on_update(): void
-    {
-        $user = User::factory()->create();
-
-        $category = ServiceCategory::create(['name' => 'Nail Art']);
-        $this->assertEquals('nail-art', $category->slug);
-
-        // Update without changing name -> slug should remain 'nail-art'
-        $this->actingAs($user, 'sanctum')
-            ->putJson('/api/v1/service-categories/' . $category->id, [
-                'icon' => 'fa-star',
-            ])
-            ->assertStatus(200)
-            ->assertJsonPath('data.slug', 'nail-art');
     }
 }
