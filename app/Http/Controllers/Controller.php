@@ -11,13 +11,18 @@ use OpenApi\Attributes as OA;
 )]
 
 #[OA\Server(
-    url: "http://127.0.0.1:8000",
-    description: "Local Development Server"
+    url: "/",
+    description: "Current Server (Auto-Detect)"
 )]
 
 #[OA\Server(
     url: "https://saloon-rx72.onrender.com",
     description: "Live Production Server (Render)"
+)]
+
+#[OA\Server(
+    url: "http://127.0.0.1:8000",
+    description: "Local Development Server"
 )]
 
 #[OA\SecurityScheme(
