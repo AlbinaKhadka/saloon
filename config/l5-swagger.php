@@ -310,6 +310,7 @@ return [
             ],
 
             'authorization' => [
+                'withCredentials' => true,
                 /*
                  * If set to true, it persists authorization data, and it would not be lost on browser close/refresh
                  */
