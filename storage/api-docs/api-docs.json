@@ -917,12 +917,12 @@
                 "tags": [
                     "Service Categories"
                 ],
-                "description": "Create a new service category",
+                "description": "Create a new service category (slug is auto-generated from name)",
                 "operationId": "storeServiceCategory",
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
                                 "required": [
                                     "name"
@@ -933,8 +933,9 @@
                                         "example": "Hair Styling"
                                     },
                                     "icon": {
+                                        "description": "Icon image file or URL/class string",
                                         "type": "string",
-                                        "example": "fa-cut",
+                                        "format": "binary",
                                         "nullable": true
                                     },
                                     "orderby": {
@@ -1012,11 +1013,11 @@
                     }
                 }
             },
-            "put": {
+            "post": {
                 "tags": [
                     "Service Categories"
                 ],
-                "description": "Update a service category",
+                "description": "Update a service category. We use POST with _method=PUT to support multipart/form-data for icon uploads in PHP.",
                 "operationId": "updateServiceCategory",
                 "parameters": [
                     {
@@ -1032,16 +1033,26 @@
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
+                                "required": [
+                                    "_method"
+                                ],
                                 "properties": {
+                                    "_method": {
+                                        "description": "Method spoofing for PUT",
+                                        "type": "string",
+                                        "example": "PUT"
+                                    },
                                     "name": {
                                         "type": "string",
-                                        "example": "Hair Care & Styling"
+                                        "example": "Hair Care & Styling",
+                                        "nullable": true
                                     },
                                     "icon": {
+                                        "description": "Icon image file or URL/class string",
                                         "type": "string",
-                                        "example": "fa-scissors",
+                                        "format": "binary",
                                         "nullable": true
                                     },
                                     "orderby": {
@@ -1140,7 +1151,7 @@
                 "tags": [
                     "Services"
                 ],
-                "description": "Get list of all services, optionally filtered by category_id",
+                "description": "Get list of services with optional category filtering, status filtering, and pagination.",
                 "operationId": "getServices",
                 "parameters": [
                     {
@@ -1155,7 +1166,16 @@
                     {
                         "name": "status",
                         "in": "query",
-                        "description": "Filter by status (0 or 1)",
+                        "description": "Filter by status: 1 or \"active\", 0 or \"inactive\"",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page. If omitted, loads all matching services.",
                         "required": false,
                         "schema": {
                             "type": "integer"
@@ -1169,11 +1189,38 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Service List"
+                                        },
                                         "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Service"
-                                            }
+                                            "properties": {
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/Service"
+                                                    }
+                                                },
+                                                "page": {
+                                                    "type": "integer",
+                                                    "example": 1,
+                                                    "nullable": true
+                                                },
+                                                "total_page": {
+                                                    "type": "integer",
+                                                    "example": 1,
+                                                    "nullable": true
+                                                },
+                                                "total_items": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
                                         }
                                     },
                                     "type": "object"
@@ -1187,7 +1234,7 @@
                 "tags": [
                     "Services"
                 ],
-                "description": "Create a new service",
+                "description": "Create a new service (slug is auto-generated from title)",
                 "operationId": "storeService",
                 "requestBody": {
                     "required": true,
@@ -1709,7 +1756,7 @@
                     },
                     "icon": {
                         "type": "string",
-                        "example": "fa-cut",
+                        "example": "http://localhost/storage/service-categories/icon.jpg",
                         "nullable": true
                     },
                     "orderby": {

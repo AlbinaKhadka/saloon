@@ -9,6 +9,7 @@ use App\Http\Resources\ServiceCategoryResource;
 use App\Models\ServiceCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use OpenApi\Attributes as OA;
 
 class ServiceCategoryController extends Controller
@@ -107,19 +108,22 @@ class ServiceCategoryController extends Controller
     #[OA\Post(
         path: '/api/v1/service-categories',
         operationId: 'storeServiceCategory',
-        description: 'Create a new service category',
+        description: 'Create a new service category (slug is auto-generated from name)',
         security: [['cookieAuth' => []]],
         tags: ['Service Categories'],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(
-                required: ['name'],
-                properties: [
-                    new OA\Property(property: 'name', type: 'string', example: 'Hair Styling'),
-                    new OA\Property(property: 'icon', type: 'string', example: 'fa-cut', nullable: true),
-                    new OA\Property(property: 'orderby', type: 'integer', example: 1, nullable: true),
-                    new OA\Property(property: 'status', type: 'boolean', example: true, nullable: true),
-                ]
+            content: new OA\MediaType(
+                mediaType: 'multipart/form-data',
+                schema: new OA\Schema(
+                    required: ['name'],
+                    properties: [
+                        new OA\Property(property: 'name', type: 'string', example: 'Hair Styling'),
+                        new OA\Property(property: 'icon', description: 'Icon image file or URL/class string', type: 'string', format: 'binary', nullable: true),
+                        new OA\Property(property: 'orderby', type: 'integer', example: 1, nullable: true),
+                        new OA\Property(property: 'status', type: 'boolean', example: true, nullable: true),
+                    ]
+                )
             )
         ),
         responses: [
@@ -130,7 +134,13 @@ class ServiceCategoryController extends Controller
     )]
     public function store(StoreServiceCategoryRequest $request): JsonResponse
     {
-        $category = ServiceCategory::create($request->validated());
+        $data = $request->validated();
+
+        if ($request->hasFile('icon')) {
+            $data['icon'] = $request->file('icon')->store('service-categories', 'public');
+        }
+
+        $category = ServiceCategory::create($data);
 
         return (new ServiceCategoryResource($category))
             ->response()
@@ -157,10 +167,10 @@ class ServiceCategoryController extends Controller
         return (new ServiceCategoryResource($serviceCategory))->response();
     }
 
-    #[OA\Put(
+    #[OA\Post(
         path: '/api/v1/service-categories/{service_category}',
         operationId: 'updateServiceCategory',
-        description: 'Update a service category',
+        description: 'Update a service category. We use POST with _method=PUT to support multipart/form-data for icon uploads in PHP.',
         security: [['cookieAuth' => []]],
         tags: ['Service Categories'],
         parameters: [
@@ -168,13 +178,18 @@ class ServiceCategoryController extends Controller
         ],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(
-                properties: [
-                    new OA\Property(property: 'name', type: 'string', example: 'Hair Care & Styling'),
-                    new OA\Property(property: 'icon', type: 'string', example: 'fa-scissors', nullable: true),
-                    new OA\Property(property: 'orderby', type: 'integer', example: 2, nullable: true),
-                    new OA\Property(property: 'status', type: 'boolean', example: true, nullable: true),
-                ]
+            content: new OA\MediaType(
+                mediaType: 'multipart/form-data',
+                schema: new OA\Schema(
+                    required: ['_method'],
+                    properties: [
+                        new OA\Property(property: '_method', description: 'Method spoofing for PUT', type: 'string', example: 'PUT'),
+                        new OA\Property(property: 'name', type: 'string', example: 'Hair Care & Styling', nullable: true),
+                        new OA\Property(property: 'icon', description: 'Icon image file or URL/class string', type: 'string', format: 'binary', nullable: true),
+                        new OA\Property(property: 'orderby', type: 'integer', example: 2, nullable: true),
+                        new OA\Property(property: 'status', type: 'boolean', example: true, nullable: true),
+                    ]
+                )
             )
         ),
         responses: [
@@ -186,7 +201,16 @@ class ServiceCategoryController extends Controller
     )]
     public function update(UpdateServiceCategoryRequest $request, ServiceCategory $serviceCategory): JsonResponse
     {
-        $serviceCategory->update($request->validated());
+        $data = $request->validated();
+
+        if ($request->hasFile('icon')) {
+            if ($serviceCategory->icon && Storage::disk('public')->exists($serviceCategory->icon)) {
+                Storage::disk('public')->delete($serviceCategory->icon);
+            }
+            $data['icon'] = $request->file('icon')->store('service-categories', 'public');
+        }
+
+        $serviceCategory->update($data);
 
         return (new ServiceCategoryResource($serviceCategory->fresh()))->response();
     }
@@ -216,6 +240,10 @@ class ServiceCategoryController extends Controller
     )]
     public function destroy(ServiceCategory $serviceCategory): JsonResponse
     {
+        if ($serviceCategory->icon && Storage::disk('public')->exists($serviceCategory->icon)) {
+            Storage::disk('public')->delete($serviceCategory->icon);
+        }
+
         $serviceCategory->delete();
 
         return response()->json(['message' => 'Service category deleted successfully.']);

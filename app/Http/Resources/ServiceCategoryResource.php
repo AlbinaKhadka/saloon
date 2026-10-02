@@ -13,7 +13,7 @@ class ServiceCategoryResource extends JsonResource
             'id'         => $this->id,
             'name'       => $this->name,
             'slug'       => $this->slug,
-            'icon'       => $this->icon,
+            'icon'       => $this->icon_url ?? $this->icon,
             'orderby'    => $this->orderby,
             'status'     => (bool) $this->status,
             'created_at' => $this->created_at,

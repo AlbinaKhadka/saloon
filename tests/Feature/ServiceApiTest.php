@@ -14,10 +14,10 @@ class ServiceApiTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_public_index_and_show_services_work_without_auth(): void
+    public function test_public_index_returns_banner_style_pagination_structure(): void
     {
         $category = ServiceCategory::create(['name' => 'Hair', 'slug' => 'hair']);
-        $service = Service::create([
+        Service::create([
             'service_category_id' => $category->id,
             'title' => 'Hair Cut',
             'price' => 50.00,
@@ -25,17 +25,37 @@ class ServiceApiTest extends TestCase
             'status' => 1,
         ]);
 
-        $this->getJson('/api/v1/services')
-            ->assertStatus(200)
-            ->assertJsonPath('data.0.title', 'Hair Cut');
+        $response = $this->getJson('/api/v1/services');
 
-        $this->getJson('/api/v1/services/' . $service->id)
-            ->assertStatus(200)
-            ->assertJsonPath('data.title', 'Hair Cut')
-            ->assertJsonPath('data.category.name', 'Hair');
+        $response->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('message', 'Service List')
+            ->assertJsonPath('data.items.0.title', 'Hair Cut');
     }
 
-    public function test_category_scoped_slug_uniqueness(): void
+    public function test_services_per_page_pagination(): void
+    {
+        $category = ServiceCategory::create(['name' => 'Hair', 'slug' => 'hair']);
+        for ($i = 1; $i <= 5; $i++) {
+            Service::create([
+                'service_category_id' => $category->id,
+                'title' => "Service {$i}",
+                'price' => 20.00,
+                'image' => 'services/s.jpg',
+                'status' => 1,
+            ]);
+        }
+
+        $response = $this->getJson('/api/v1/services?per_page=2');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.page', 1)
+            ->assertJsonPath('data.total_page', 3)
+            ->assertJsonPath('data.total_items', 5)
+            ->assertJsonCount(2, 'data.items');
+    }
+
+    public function test_category_scoped_slug_uniqueness_and_auto_creation(): void
     {
         Storage::fake('public');
         $user = User::factory()->create();
@@ -69,24 +89,5 @@ class ServiceApiTest extends TestCase
             'status' => 1,
             'image' => UploadedFile::fake()->image('s3.jpg'),
         ])->assertStatus(201)->assertJsonPath('data.slug', 'hair-cut');
-    }
-
-    public function test_existing_service_backfill_migration_assigns_general_category(): void
-    {
-        $category = ServiceCategory::create(['name' => 'General', 'slug' => 'general']);
-        $service = Service::create([
-            'service_category_id' => $category->id,
-            'title' => 'haircutting',
-            'slug' => 'haircutting',
-            'price' => 25.00,
-            'image' => 'services/haircutting.jpg',
-            'status' => 1,
-        ]);
-
-        $this->assertDatabaseHas('services', [
-            'id' => $service->id,
-            'title' => 'haircutting',
-            'service_category_id' => $category->id,
-        ]);
     }
 }

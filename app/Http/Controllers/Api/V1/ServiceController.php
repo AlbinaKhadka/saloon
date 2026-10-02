@@ -17,11 +17,12 @@ class ServiceController extends Controller
     #[OA\Get(
         path: '/api/v1/services',
         operationId: 'getServices',
-        description: 'Get list of all services, optionally filtered by category_id',
+        description: 'Get list of services with optional category filtering, status filtering, and pagination.',
         tags: ['Services'],
         parameters: [
             new OA\Parameter(name: 'category_id', description: 'Filter by category ID', in: 'query', required: false, schema: new OA\Schema(type: 'integer')),
-            new OA\Parameter(name: 'status', description: 'Filter by status (0 or 1)', in: 'query', required: false, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'status', description: 'Filter by status: 1 or "active", 0 or "inactive"', in: 'query', required: false, schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'per_page', description: 'Number of items per page. If omitted, loads all matching services.', in: 'query', required: false, schema: new OA\Schema(type: 'integer')),
         ],
         responses: [
             new OA\Response(
@@ -29,11 +30,22 @@ class ServiceController extends Controller
                 description: 'Successful operation',
                 content: new OA\JsonContent(
                     properties: [
+                        new OA\Property(property: 'message', type: 'string', example: 'Service List'),
                         new OA\Property(
                             property: 'data',
-                            type: 'array',
-                            items: new OA\Items(ref: '#/components/schemas/Service')
+                            type: 'object',
+                            properties: [
+                                new OA\Property(
+                                    property: 'items',
+                                    type: 'array',
+                                    items: new OA\Items(ref: '#/components/schemas/Service')
+                                ),
+                                new OA\Property(property: 'page', type: 'integer', example: 1, nullable: true),
+                                new OA\Property(property: 'total_page', type: 'integer', example: 1, nullable: true),
+                                new OA\Property(property: 'total_items', type: 'integer', example: 10)
+                            ]
                         ),
+                        new OA\Property(property: 'success', type: 'boolean', example: true)
                     ]
                 )
             ),
@@ -41,25 +53,55 @@ class ServiceController extends Controller
     )]
     public function index(Request $request): JsonResponse
     {
-        $query = Service::with('category')->orderBy('orderby');
+        $query = Service::with('category');
 
-        if ($request->has('category_id')) {
-            $query->where('service_category_id', $request->query('category_id'));
+        if ($request->has('category_id') && $request->category_id !== null && $request->category_id !== '') {
+            $query->where('service_category_id', $request->category_id);
         }
 
-        if ($request->has('status')) {
-            $query->where('status', $request->query('status'));
+        if ($request->has('status') && $request->status !== null && $request->status !== '') {
+            $status = strtolower((string) $request->status);
+            if ($status === 'active' || $status === '1') {
+                $query->where('status', 1);
+            } elseif ($status === 'inactive' || $status === '0') {
+                $query->where('status', 0);
+            }
         }
 
-        $services = $query->paginate(15);
+        $query->orderBy('orderby', 'asc')->orderBy('id', 'desc');
 
-        return ServiceResource::collection($services)->response();
+        if ($request->filled('per_page') && is_numeric($request->per_page) && (int) $request->per_page > 0) {
+            $perPage = (int) $request->per_page;
+            $services = $query->paginate($perPage);
+
+            return response()->json([
+                'message' => 'Service List',
+                'data' => [
+                    'items' => ServiceResource::collection($services->items()),
+                    'page' => $services->currentPage(),
+                    'total_page' => $services->lastPage(),
+                    'total_items' => $services->total(),
+                ],
+                'success' => true,
+            ], 200);
+        }
+
+        $services = $query->get();
+
+        return response()->json([
+            'message' => 'Service List',
+            'data' => [
+                'items' => ServiceResource::collection($services),
+                'total_items' => $services->count(),
+            ],
+            'success' => true,
+        ], 200);
     }
 
     #[OA\Post(
         path: '/api/v1/services',
         operationId: 'storeService',
-        description: 'Create a new service',
+        description: 'Create a new service (slug is auto-generated from title)',
         security: [['cookieAuth' => []]],
         tags: ['Services'],
         requestBody: new OA\RequestBody(
@@ -172,7 +214,6 @@ class ServiceController extends Controller
         }
 
         $service->update($data);
-        $service->load('category');
 
         return (new ServiceResource($service->fresh(['category'])))->response();
     }
