@@ -91,7 +91,7 @@ class BannerController extends Controller
     #[OA\Post(
         path: '/api/v1/banners',
         operationId: 'storeBanner',
-        description: 'Create a new banner',
+        description: 'Create a new banner (slug is auto-generated from title)',
         security: [['bearerAuth' => []]],
         tags: ['Banners'],
         requestBody: new OA\RequestBody(
@@ -99,10 +99,9 @@ class BannerController extends Controller
             content: new OA\MediaType(
                 mediaType: 'multipart/form-data',
                 schema: new OA\Schema(
-                    required: ['image', 'status'],
+                    required: ['title', 'image', 'status'],
                     properties: [
-                        new OA\Property(property: 'title', type: 'string', nullable: true),
-                        new OA\Property(property: 'slug', type: 'string', nullable: true),
+                        new OA\Property(property: 'title', type: 'string', example: 'Summer Special Offer'),
                         new OA\Property(property: 'description', type: 'string', nullable: true),
                         new OA\Property(property: 'image', description: 'Banner image file', type: 'string', format: 'binary'),
                         new OA\Property(property: 'url', description: 'Target link URL for the banner', type: 'string', nullable: true),
@@ -169,7 +168,6 @@ class BannerController extends Controller
                     properties: [
                         new OA\Property(property: '_method', description: 'Method spoofing for PUT', type: 'string', example: 'PUT'),
                         new OA\Property(property: 'title', type: 'string', nullable: true),
-                        new OA\Property(property: 'slug', type: 'string', nullable: true),
                         new OA\Property(property: 'description', type: 'string', nullable: true),
                         new OA\Property(property: 'image', description: 'Banner image file (optional on update)', type: 'string', format: 'binary', nullable: true),
                         new OA\Property(property: 'url', description: 'Target link URL for the banner', type: 'string', nullable: true),

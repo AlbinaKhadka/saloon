@@ -27,59 +27,78 @@ class BannerApiTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonPath('data.items.0.title', 'Spring Offer')
+            ->assertJsonPath('data.items.0.slug', 'spring-offer')
             ->assertJsonPath('data.items.0.description', 'Discounts up to 30%');
     }
 
-    public function test_can_create_banner_with_optional_description(): void
+    public function test_slug_is_auto_generated_from_title_on_creation(): void
     {
         Storage::fake('public');
         $user = User::factory()->create();
 
         $response = $this->actingAs($user, 'sanctum')
             ->postJson('/api/v1/banners', [
-                'title'       => 'Special Event',
-                'description' => 'Exclusive salon package deals',
+                'title'       => 'Grand Opening Sale',
+                'description' => 'Discounts for all first time customers',
                 'status'      => 1,
                 'image'       => UploadedFile::fake()->image('banner.jpg'),
             ]);
 
         $response->assertStatus(201)
-            ->assertJsonPath('title', 'Special Event')
-            ->assertJsonPath('description', 'Exclusive salon package deals');
+            ->assertJsonPath('title', 'Grand Opening Sale')
+            ->assertJsonPath('slug', 'grand-opening-sale')
+            ->assertJsonPath('description', 'Discounts for all first time customers');
 
         $this->assertDatabaseHas('banners', [
-            'title'       => 'Special Event',
-            'description' => 'Exclusive salon package deals',
+            'title' => 'Grand Opening Sale',
+            'slug'  => 'grand-opening-sale',
         ]);
     }
 
-    public function test_can_update_banner_description(): void
+    public function test_title_is_required_on_banner_creation(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson('/api/v1/banners', [
+                'status' => 1,
+                'image'  => UploadedFile::fake()->image('banner.jpg'),
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['title']);
+    }
+
+    public function test_slug_auto_updates_when_title_changes(): void
     {
         Storage::fake('public');
         $user = User::factory()->create();
 
         $banner = Banner::create([
-            'title'       => 'Original Title',
-            'description' => 'Original Description',
+            'title'       => 'Initial Title',
+            'description' => 'Initial Description',
             'image'       => 'banners/orig.jpg',
             'status'      => 1,
         ]);
 
+        $this->assertEquals('initial-title', $banner->slug);
+
         $response = $this->actingAs($user, 'sanctum')
             ->postJson('/api/v1/banners/' . $banner->id, [
                 '_method'     => 'PUT',
-                'title'       => 'Updated Title',
-                'description' => 'Updated Description details',
+                'title'       => 'Updated Special Title',
+                'description' => 'Updated Description',
                 'status'      => 1,
             ]);
 
         $response->assertStatus(200)
-            ->assertJsonPath('title', 'Updated Title')
-            ->assertJsonPath('description', 'Updated Description details');
+            ->assertJsonPath('title', 'Updated Special Title')
+            ->assertJsonPath('slug', 'updated-special-title');
 
         $this->assertDatabaseHas('banners', [
-            'id'          => $banner->id,
-            'description' => 'Updated Description details',
+            'id'    => $banner->id,
+            'title' => 'Updated Special Title',
+            'slug'  => 'updated-special-title',
         ]);
     }
 

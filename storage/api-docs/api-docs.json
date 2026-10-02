@@ -304,7 +304,7 @@
                 "tags": [
                     "Banners"
                 ],
-                "description": "Create a new banner",
+                "description": "Create a new banner (slug is auto-generated from title)",
                 "operationId": "storeBanner",
                 "requestBody": {
                     "required": true,
@@ -312,17 +312,14 @@
                         "multipart/form-data": {
                             "schema": {
                                 "required": [
+                                    "title",
                                     "image",
                                     "status"
                                 ],
                                 "properties": {
                                     "title": {
                                         "type": "string",
-                                        "nullable": true
-                                    },
-                                    "slug": {
-                                        "type": "string",
-                                        "nullable": true
+                                        "example": "Summer Special Offer"
                                     },
                                     "description": {
                                         "type": "string",
@@ -456,10 +453,6 @@
                                         "example": "PUT"
                                     },
                                     "title": {
-                                        "type": "string",
-                                        "nullable": true
-                                    },
-                                    "slug": {
                                         "type": "string",
                                         "nullable": true
                                     },
@@ -1507,13 +1500,11 @@
                     },
                     "title": {
                         "type": "string",
-                        "example": "Summer Sale",
-                        "nullable": true
+                        "example": "Summer Sale"
                     },
                     "slug": {
                         "type": "string",
-                        "example": "summer-sale",
-                        "nullable": true
+                        "example": "summer-sale"
                     },
                     "description": {
                         "type": "string",
