@@ -17,9 +17,30 @@ class ServiceCategoryController extends Controller
     #[OA\Get(
         path: '/api/v1/service-categories',
         operationId: 'getServiceCategories',
-        description: 'Get list of service categories with optional status filtering and optional pagination.',
+        description: 'Get list of service categories with optional search/name/title filtering, status filtering, and optional pagination.',
         tags: ['Service Categories'],
         parameters: [
+            new OA\Parameter(
+                name: 'search',
+                description: 'Search service categories by name/title keyword',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'string')
+            ),
+            new OA\Parameter(
+                name: 'title',
+                description: 'Filter service categories by title/name keyword',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'string')
+            ),
+            new OA\Parameter(
+                name: 'name',
+                description: 'Filter service categories by name keyword',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'string')
+            ),
             new OA\Parameter(
                 name: 'status',
                 description: 'Filter by status: 1/true or "active", 0/false or "inactive"',
@@ -65,6 +86,17 @@ class ServiceCategoryController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = ServiceCategory::query();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('name', 'like', "%{$search}%");
+        } elseif ($request->filled('title')) {
+            $title = $request->title;
+            $query->where('name', 'like', "%{$title}%");
+        } elseif ($request->filled('name')) {
+            $name = $request->name;
+            $query->where('name', 'like', "%{$name}%");
+        }
 
         if ($request->has('status') && $request->status !== null && $request->status !== '') {
             $status = strtolower((string) $request->status);

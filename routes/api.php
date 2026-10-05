@@ -49,8 +49,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
+    Route::post('/change-password', [AuthController::class, 'changePassword']);
 
     Route::prefix('v1')->group(function () {
+        Route::post('logout', [AuthController::class, 'logout']);
+        Route::post('change-password', [AuthController::class, 'changePassword']);
         Route::apiResource('banners', BannerController::class)->except(['index', 'show']);
         Route::apiResource('service-categories', ServiceCategoryController::class)->except(['index', 'show']);
         Route::apiResource('services', ServiceController::class)->except(['index', 'show']);

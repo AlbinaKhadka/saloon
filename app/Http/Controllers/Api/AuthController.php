@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use OpenApi\Attributes as OA;
 
 class AuthController extends Controller
@@ -106,7 +108,13 @@ class AuthController extends Controller
     )]
     public function logout(Request $request): JsonResponse
     {
-        Auth::logout();
+        if ($request->user()) {
+            if (method_exists($request->user(), 'currentAccessToken') && $request->user()->currentAccessToken()) {
+                $request->user()->currentAccessToken()->delete();
+            }
+
+            Auth::guard('web')->logout();
+        }
 
         if ($request->hasSession()) {
             $request->session()->invalidate();
@@ -115,7 +123,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Logged out successfully',
-        ]);
+        ], 200);
     }
 
     #[OA\Get(
@@ -170,6 +178,59 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Login successful',
             'user' => new UserResource($request->user()),
+        ], 200);
+    }
+
+    #[OA\Post(
+        path: '/api/v1/change-password',
+        operationId: 'changePassword',
+        description: 'Change current user password.',
+        security: [['cookieAuth' => []]],
+        tags: ['Authentication'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['current_password', 'new_password', 'new_password_confirmation'],
+                properties: [
+                    new OA\Property(property: 'current_password', type: 'string', format: 'password', example: 'password'),
+                    new OA\Property(property: 'new_password', type: 'string', format: 'password', example: 'newpassword123'),
+                    new OA\Property(property: 'new_password_confirmation', type: 'string', format: 'password', example: 'newpassword123'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Password changed successfully',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'message', type: 'string', example: 'Password changed successfully')
+                    ]
+                )
+            ),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 422, description: 'Validation Error / Current Password Mismatch'),
+        ]
+    )]
+    public function changePassword(ChangePasswordRequest $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'message' => 'Current password does not match',
+                'errors' => [
+                    'current_password' => ['The provided current password is incorrect.'],
+                ],
+            ], 422);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->new_password),
+        ]);
+
+        return response()->json([
+            'message' => 'Password changed successfully',
         ], 200);
     }
 }

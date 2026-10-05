@@ -156,6 +156,76 @@
                 ]
             }
         },
+        "/api/v1/change-password": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "description": "Change current user password.",
+                "operationId": "changePassword",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "current_password",
+                                    "new_password",
+                                    "new_password_confirmation"
+                                ],
+                                "properties": {
+                                    "current_password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password"
+                                    },
+                                    "new_password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "newpassword123"
+                                    },
+                                    "new_password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "newpassword123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password changed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Password changed successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "422": {
+                        "description": "Validation Error / Current Password Mismatch"
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/abouts": {
             "get": {
                 "tags": [
@@ -258,9 +328,27 @@
                 "tags": [
                     "Banners"
                 ],
-                "description": "Get list of banners with optional status filtering and optional pagination.",
+                "description": "Get list of banners with optional title/search filtering, status filtering, and pagination.",
                 "operationId": "getBanners",
                 "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search banners by title keyword",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "title",
+                        "in": "query",
+                        "description": "Filter banners by title keyword",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     {
                         "name": "status",
                         "in": "query",
@@ -349,6 +437,7 @@
                                     },
                                     "orderby": {
                                         "type": "integer",
+                                        "example": 1,
                                         "nullable": true
                                     }
                                 },
@@ -847,9 +936,36 @@
                 "tags": [
                     "Service Categories"
                 ],
-                "description": "Get list of service categories with optional status filtering and optional pagination.",
+                "description": "Get list of service categories with optional search/name/title filtering, status filtering, and optional pagination.",
                 "operationId": "getServiceCategories",
                 "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search service categories by name/title keyword",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "title",
+                        "in": "query",
+                        "description": "Filter service categories by title/name keyword",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Filter service categories by name keyword",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     {
                         "name": "status",
                         "in": "query",
@@ -1155,13 +1271,40 @@
                 "tags": [
                     "Services"
                 ],
-                "description": "Get list of all services with optional status/category filtering and pagination.",
+                "description": "Get list of all services with optional title/search filtering, category filtering, status filtering, and pagination.",
                 "operationId": "getServices",
                 "parameters": [
                     {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search services by title keyword",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "title",
+                        "in": "query",
+                        "description": "Filter services by title keyword",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "service_category_id",
+                        "in": "query",
+                        "description": "Filter by Service Category ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
                         "name": "category_id",
                         "in": "query",
-                        "description": "Filter by category ID",
+                        "description": "Filter by Category ID",
                         "required": false,
                         "schema": {
                             "type": "integer"

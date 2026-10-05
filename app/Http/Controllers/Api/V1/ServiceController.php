@@ -17,10 +17,13 @@ class ServiceController extends Controller
     #[OA\Get(
         path: '/api/v1/services',
         operationId: 'getServices',
-        description: 'Get list of all services with optional status/category filtering and pagination.',
+        description: 'Get list of all services with optional title/search filtering, category filtering, status filtering, and pagination.',
         tags: ['Services'],
         parameters: [
-            new OA\Parameter(name: 'category_id', description: 'Filter by category ID', in: 'query', required: false, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'search', description: 'Search services by title keyword', in: 'query', required: false, schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'title', description: 'Filter services by title keyword', in: 'query', required: false, schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'service_category_id', description: 'Filter by Service Category ID', in: 'query', required: false, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'category_id', description: 'Filter by Category ID', in: 'query', required: false, schema: new OA\Schema(type: 'integer')),
             new OA\Parameter(name: 'status', description: 'Filter by status: 1 or "active", 0 or "inactive"', in: 'query', required: false, schema: new OA\Schema(type: 'string')),
             new OA\Parameter(name: 'per_page', description: 'Number of items per page. If omitted, loads all matching services.', in: 'query', required: false, schema: new OA\Schema(type: 'integer')),
         ],
@@ -55,8 +58,18 @@ class ServiceController extends Controller
     {
         $query = Service::with('category');
 
-        if ($request->has('category_id') && $request->category_id !== null && $request->category_id !== '') {
-            $query->where('service_category_id', $request->query('category_id'));
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('title', 'like', "%{$search}%");
+        } elseif ($request->filled('title')) {
+            $title = $request->title;
+            $query->where('title', 'like', "%{$title}%");
+        }
+
+        if ($request->filled('service_category_id')) {
+            $query->where('service_category_id', $request->service_category_id);
+        } elseif ($request->filled('category_id')) {
+            $query->where('service_category_id', $request->category_id);
         }
 
         if ($request->has('status') && $request->status !== null && $request->status !== '') {

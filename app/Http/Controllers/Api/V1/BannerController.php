@@ -17,10 +17,24 @@ class BannerController extends Controller
     #[OA\Get(
         path: '/api/v1/banners',
         operationId: 'getBanners',
-        description: 'Get list of banners with optional status filtering and optional pagination.',
+        description: 'Get list of banners with optional title/search filtering, status filtering, and pagination.',
         security: [['bearerAuth' => []]],
         tags: ['Banners'],
         parameters: [
+            new OA\Parameter(
+                name: 'search',
+                description: 'Search banners by title keyword',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'string')
+            ),
+            new OA\Parameter(
+                name: 'title',
+                description: 'Filter banners by title keyword',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'string')
+            ),
             new OA\Parameter(
                 name: 'status',
                 description: 'Filter by status: 1 or "active", 0 or "inactive"',
@@ -48,6 +62,14 @@ class BannerController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = Banner::query();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('title', 'like', "%{$search}%");
+        } elseif ($request->filled('title')) {
+            $title = $request->title;
+            $query->where('title', 'like', "%{$title}%");
+        }
 
         if ($request->has('status') && $request->status !== null && $request->status !== '') {
             $status = strtolower((string) $request->status);
@@ -106,7 +128,7 @@ class BannerController extends Controller
                         new OA\Property(property: 'image', description: 'Banner image file', type: 'string', format: 'binary'),
                         new OA\Property(property: 'url', description: 'Target link URL for the banner', type: 'string', nullable: true),
                         new OA\Property(property: 'status', description: '0 = inactive, 1 = active', type: 'integer', enum: [0, 1]),
-                        new OA\Property(property: 'orderby', type: 'integer', nullable: true),
+                        new OA\Property(property: 'orderby', type: 'integer', example: 1, nullable: true),
                     ]
                 )
             )
