@@ -24,18 +24,8 @@ class AuthController extends Controller
             content: new OA\JsonContent(
                 required: ['email', 'password'],
                 properties: [
-                    new OA\Property(
-                        property: 'email',
-                        type: 'string',
-                        format: 'email',
-                        example: 'admin@example.com'
-                    ),
-                    new OA\Property(
-                        property: 'password',
-                        type: 'string',
-                        format: 'password',
-                        example: 'password'
-                    ),
+                    new OA\Property(property: 'email', type: 'string', format: 'email', example: 'admin@example.com'),
+                    new OA\Property(property: 'password', type: 'string', format: 'password', example: 'password'),
                 ]
             )
         ),
@@ -45,47 +35,37 @@ class AuthController extends Controller
                 description: 'Login successful',
                 content: new OA\JsonContent(
                     properties: [
-                        new OA\Property(
-                            property: 'message',
-                            type: 'string',
-                            example: 'Login successful'
-                        ),
-                        new OA\Property(
-                            property: 'user',
-                            ref: '#/components/schemas/User'
-                        ),
+                        new OA\Property(property: 'message', type: 'string', example: 'Login successful'),
+                        new OA\Property(property: 'user', ref: '#/components/schemas/User'),
                     ]
                 )
             ),
-            new OA\Response(
-                response: 401,
-                description: 'Invalid credentials'
-            ),
-            new OA\Response(
-                response: 422,
-                description: 'Validation error'
-            ),
+            new OA\Response(response: 400, description: 'Request is not from a stateful domain'),
+            new OA\Response(response: 401, description: 'Invalid credentials'),
+            new OA\Response(response: 422, description: 'Validation error'),
         ]
     )]
     public function login(LoginRequest $request): JsonResponse
     {
-        if (!Auth::attempt($request->validated())) {
+        // Without a session the login would "succeed" but no cookie would be issued.
+        if (! $request->hasSession()) {
+            return response()->json([
+                'message' => 'Request is not from a stateful domain. Check SANCTUM_STATEFUL_DOMAINS and the Origin/Referer header.',
+            ], 400);
+        }
+
+        if (! Auth::attempt($request->validated())) {
             return response()->json([
                 'message' => 'Invalid credentials',
             ], 401);
         }
 
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-
-        // Prevent session fixation if session middleware is active
-        if ($request->hasSession()) {
-            $request->session()->regenerate();
-        }
+        // Prevent session fixation
+        $request->session()->regenerate();
 
         return response()->json([
             'message' => 'Login successful',
-            'user' => new UserResource($user),
+            'user' => new UserResource(Auth::user()),
         ], 200);
     }
 
@@ -96,26 +76,13 @@ class AuthController extends Controller
         security: [['cookieAuth' => []]],
         tags: ['Authentication'],
         responses: [
-            new OA\Response(
-                response: 200,
-                description: 'Successfully logged out'
-            ),
-            new OA\Response(
-                response: 401,
-                description: 'Unauthenticated'
-            ),
+            new OA\Response(response: 200, description: 'Successfully logged out'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
         ]
     )]
     public function logout(Request $request): JsonResponse
     {
-        if ($request->user()) {
-            $token = $request->user()->currentAccessToken();
-            if ($token && ! ($token instanceof \Laravel\Sanctum\TransientToken) && method_exists($token, 'delete')) {
-                $token->delete();
-            }
-
-            Auth::guard('web')->logout();
-        }
+        Auth::guard('web')->logout();
 
         if ($request->hasSession()) {
             $request->session()->invalidate();
@@ -133,10 +100,7 @@ class AuthController extends Controller
         description: 'Get Sanctum CSRF cookie initialization for SPA/session authentication.',
         tags: ['Authentication'],
         responses: [
-            new OA\Response(
-                response: 204,
-                description: 'CSRF cookie set successfully'
-            ),
+            new OA\Response(response: 204, description: 'CSRF cookie set successfully'),
         ]
     )]
     public function csrfCookie(): JsonResponse
@@ -156,22 +120,12 @@ class AuthController extends Controller
                 description: 'User retrieved successfully',
                 content: new OA\JsonContent(
                     properties: [
-                        new OA\Property(
-                            property: 'message',
-                            type: 'string',
-                            example: 'Login successful'
-                        ),
-                        new OA\Property(
-                            property: 'user',
-                            ref: '#/components/schemas/User'
-                        ),
+                        new OA\Property(property: 'message', type: 'string', example: 'Login successful'),
+                        new OA\Property(property: 'user', ref: '#/components/schemas/User'),
                     ]
                 )
             ),
-            new OA\Response(
-                response: 401,
-                description: 'Unauthenticated'
-            ),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
         ]
     )]
     public function user(Request $request): JsonResponse
@@ -205,7 +159,7 @@ class AuthController extends Controller
                 description: 'Password changed successfully',
                 content: new OA\JsonContent(
                     properties: [
-                        new OA\Property(property: 'message', type: 'string', example: 'Password changed successfully')
+                        new OA\Property(property: 'message', type: 'string', example: 'Password changed successfully'),
                     ]
                 )
             ),

@@ -18,11 +18,12 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->trustProxies(at: '*');
 
+        // API requests never redirect to a (non-existent) login route
+        $middleware->redirectGuestsTo(fn (Request $request) => null);
+
         $middleware->validateCsrfTokens(except: [
             'api/login',
-            'login',
             'api/logout',
-            'logout',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
