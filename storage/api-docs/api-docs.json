@@ -7,10 +7,6 @@
     },
     "servers": [
         {
-            "url": "/",
-            "description": "Current Server (Auto-Detect)"
-        },
-        {
             "url": "https://saloon-rx72.onrender.com",
             "description": "Live Production Server (Render)"
         },
@@ -1657,38 +1653,6 @@
     },
     "components": {
         "schemas": {
-            "User": {
-                "title": "User",
-                "description": "Authenticated user",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "example": 1
-                    },
-                    "name": {
-                        "type": "string",
-                        "example": "Test User"
-                    },
-                    "email": {
-                        "type": "string",
-                        "format": "email",
-                        "example": "test@example.com"
-                    },
-                    "role": {
-                        "type": "string",
-                        "example": "admin"
-                    },
-                    "created_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "updated_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                },
-                "type": "object"
-            },
             "About": {
                 "title": "About",
                 "description": "About Us page content with images",
@@ -1925,18 +1889,43 @@
                     }
                 },
                 "type": "object"
+            },
+            "User": {
+                "title": "User",
+                "description": "User model",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Admin"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "admin@example.com"
+                    },
+                    "role": {
+                        "type": "string",
+                        "example": "admin"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
             }
         },
         "securitySchemes": {
             "sanctumCookie": {
                 "type": "apiKey",
                 "description": "Laravel Sanctum session cookie authentication",
-                "name": "laravel_session",
-                "in": "cookie"
-            },
-            "cookieAuth": {
-                "type": "apiKey",
-                "description": "Laravel Sanctum session cookie authentication.",
                 "name": "laravel_session",
                 "in": "cookie"
             }

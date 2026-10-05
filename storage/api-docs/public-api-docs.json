@@ -1,0 +1,680 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Public Website API (No Auth)",
+        "description": "Public read-only endpoints for the Saloon website (Banners, Services, Service Categories, Galleries). No authorization required.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://saloon-rx72.onrender.com",
+            "description": "Live Production Server (Render)"
+        },
+        {
+            "url": "http://127.0.0.1:8000",
+            "description": "Local Development Server"
+        }
+    ],
+    "paths": {
+        "/api/v1/banners": {
+            "get": {
+                "tags": [
+                    "Public Banners"
+                ],
+                "description": "Fetch list of banners for the website homepage/promotions (No auth required)",
+                "operationId": "getPublicBanners",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search banners by title keyword",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "title",
+                        "in": "query",
+                        "description": "Filter banners by title keyword",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by status: 1 or \"active\", 0 or \"inactive\"",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Banner"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/banners/{banner}": {
+            "get": {
+                "tags": [
+                    "Public Banners"
+                ],
+                "description": "Get details of a single banner by ID (No auth required)",
+                "operationId": "getPublicBanner",
+                "parameters": [
+                    {
+                        "name": "banner",
+                        "in": "path",
+                        "description": "Banner ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Banner"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Banner not found"
+                    }
+                }
+            }
+        },
+        "/api/v1/service-categories": {
+            "get": {
+                "tags": [
+                    "Public Service Categories"
+                ],
+                "description": "Fetch list of service categories for the website (No auth required)",
+                "operationId": "getPublicServiceCategories",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search categories by name or title keyword",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "title",
+                        "in": "query",
+                        "description": "Filter categories by title/name keyword",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Filter categories by category name",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ServiceCategory"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/service-categories/{service_category}": {
+            "get": {
+                "tags": [
+                    "Public Service Categories"
+                ],
+                "description": "Get details of a single service category by ID (No auth required)",
+                "operationId": "getPublicServiceCategory",
+                "parameters": [
+                    {
+                        "name": "service_category",
+                        "in": "path",
+                        "description": "Service Category ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ServiceCategory"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Service Category not found"
+                    }
+                }
+            }
+        },
+        "/api/v1/services": {
+            "get": {
+                "tags": [
+                    "Public Services"
+                ],
+                "description": "Fetch list of services for the website with optional category and title filter (No auth required)",
+                "operationId": "getPublicServices",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search services by title keyword",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "title",
+                        "in": "query",
+                        "description": "Filter services by title keyword",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "service_category_id",
+                        "in": "query",
+                        "description": "Filter services by service category ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Service"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/services/{service}": {
+            "get": {
+                "tags": [
+                    "Public Services"
+                ],
+                "description": "Get details of a single service by ID (No auth required)",
+                "operationId": "getPublicService",
+                "parameters": [
+                    {
+                        "name": "service",
+                        "in": "path",
+                        "description": "Service ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Service"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Service not found"
+                    }
+                }
+            }
+        },
+        "/api/v1/galleries": {
+            "get": {
+                "tags": [
+                    "Public Galleries"
+                ],
+                "description": "Fetch list of gallery images for the website (No auth required)",
+                "operationId": "getPublicGalleries",
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "description": "Filter gallery items by category name",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Gallery"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/galleries/{gallery}": {
+            "get": {
+                "tags": [
+                    "Public Galleries"
+                ],
+                "description": "Get details of a single gallery item by ID (No auth required)",
+                "operationId": "getPublicGallery",
+                "parameters": [
+                    {
+                        "name": "gallery",
+                        "in": "path",
+                        "description": "Gallery ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Gallery"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Gallery not found"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "About": {
+                "title": "About",
+                "description": "About Us page content with images",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "About Our Salon",
+                        "nullable": true
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "about-our-salon",
+                        "nullable": true
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "We have been serving...",
+                        "nullable": true
+                    },
+                    "images": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "http://localhost/storage/abouts/image.jpg"
+                        },
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Banner": {
+                "title": "Banner",
+                "description": "Banner model",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Summer Sale"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "summer-sale"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Get 50% discount on all hair styling services",
+                        "nullable": true
+                    },
+                    "image": {
+                        "type": "string",
+                        "example": "http://localhost/storage/banners/image.jpg"
+                    },
+                    "url": {
+                        "type": "string",
+                        "example": "https://example.com/promo",
+                        "nullable": true
+                    },
+                    "status": {
+                        "description": "0=inactive, 1=active",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "orderby": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Gallery": {
+                "title": "Gallery",
+                "description": "Gallery item model with photo and category info",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Interior view",
+                        "nullable": true
+                    },
+                    "category": {
+                        "type": "string",
+                        "example": "Products",
+                        "nullable": true
+                    },
+                    "image": {
+                        "type": "string",
+                        "example": "http://localhost:8000/storage/galleries/image.jpg"
+                    },
+                    "status": {
+                        "description": "0=inactive, 1=active",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "orderby": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Service": {
+                "title": "Service",
+                "description": "Service model",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "service_category_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Hair Cut"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "hair-cut"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Professional hair cutting",
+                        "nullable": true
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 500
+                    },
+                    "duration": {
+                        "type": "integer",
+                        "example": 30,
+                        "nullable": true
+                    },
+                    "image": {
+                        "type": "string",
+                        "example": "http://localhost/storage/services/image.jpg"
+                    },
+                    "status": {
+                        "description": "0=inactive, 1=active",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "orderby": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "ServiceCategory": {
+                "title": "ServiceCategory",
+                "description": "ServiceCategory model",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Hair Care"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "hair-care"
+                    },
+                    "icon": {
+                        "type": "string",
+                        "example": "http://localhost/storage/service_categories/icon.jpg",
+                        "nullable": true
+                    },
+                    "orderby": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "User": {
+                "title": "User",
+                "description": "User model",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Admin"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "admin@example.com"
+                    },
+                    "role": {
+                        "type": "string",
+                        "example": "admin"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Public Banners",
+            "description": "Public Banners"
+        },
+        {
+            "name": "Public Service Categories",
+            "description": "Public Service Categories"
+        },
+        {
+            "name": "Public Services",
+            "description": "Public Services"
+        },
+        {
+            "name": "Public Galleries",
+            "description": "Public Galleries"
+        }
+    ]
+}

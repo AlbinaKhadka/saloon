@@ -11,11 +11,6 @@ use OpenApi\Attributes as OA;
 )]
 
 #[OA\Server(
-    url: "/",
-    description: "Current Server (Auto-Detect)"
-)]
-
-#[OA\Server(
     url: "https://saloon-rx72.onrender.com",
     description: "Live Production Server (Render)"
 )]

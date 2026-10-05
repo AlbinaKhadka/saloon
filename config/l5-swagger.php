@@ -44,7 +44,28 @@ return [
                  * Absolute paths to directory containing the swagger annotations are stored.
                  */
                 'annotations' => [
-                    base_path('app'),
+                    base_path('app/Http/Controllers'),
+                    base_path('app/Models'),
+                ],
+            ],
+        ],
+        'public' => [
+            'api' => [
+                'title' => 'Public Website API (No Auth)',
+            ],
+
+            'routes' => [
+                'api' => 'api/documentation',
+            ],
+            'paths' => [
+                'use_absolute_path' => env('L5_SWAGGER_USE_ABSOLUTE_PATH', true),
+                'swagger_ui_assets_path' => env('L5_SWAGGER_UI_ASSETS_PATH', 'vendor/swagger-api/swagger-ui/dist/'),
+                'docs_json' => 'public-api-docs.json',
+                'docs_yaml' => 'public-api-docs.yaml',
+                'format_to_use_for_docs' => env('L5_FORMAT_TO_USE_FOR_DOCS', 'json'),
+                'annotations' => [
+                    base_path('app/Docs/Public'),
+                    base_path('app/Models'),
                 ],
             ],
         ],
