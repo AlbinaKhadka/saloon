@@ -109,8 +109,9 @@ class AuthController extends Controller
     public function logout(Request $request): JsonResponse
     {
         if ($request->user()) {
-            if (method_exists($request->user(), 'currentAccessToken') && $request->user()->currentAccessToken()) {
-                $request->user()->currentAccessToken()->delete();
+            $token = $request->user()->currentAccessToken();
+            if ($token && ! ($token instanceof \Laravel\Sanctum\TransientToken) && method_exists($token, 'delete')) {
+                $token->delete();
             }
 
             Auth::guard('web')->logout();
