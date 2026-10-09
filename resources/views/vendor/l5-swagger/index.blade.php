@@ -141,6 +141,7 @@
 
             requestInterceptor: function(request) {
                 request.headers['X-CSRF-TOKEN'] = '{{ csrf_token() }}';
+                request.credentials = 'include';
                 return request;
             },
 
