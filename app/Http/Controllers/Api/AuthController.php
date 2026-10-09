@@ -47,11 +47,6 @@ class AuthController extends Controller
     )]
     public function login(LoginRequest $request): JsonResponse
     {
-        if (! $request->hasSession()) {
-            $request->setLaravelSession(app('session')->driver());
-            $request->session()->start();
-        }
-
         if (! Auth::attempt($request->validated())) {
             return response()->json([
                 'message' => 'Invalid credentials',
