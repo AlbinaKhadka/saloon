@@ -441,11 +441,13 @@
                     },
                     "title": {
                         "type": "string",
-                        "example": "Summer Sale"
+                        "example": "Summer Sale",
+                        "nullable": true
                     },
                     "slug": {
                         "type": "string",
-                        "example": "summer-sale"
+                        "example": "summer-sale",
+                        "nullable": true
                     },
                     "description": {
                         "type": "string",

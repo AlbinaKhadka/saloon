@@ -69,6 +69,9 @@
                             }
                         }
                     },
+                    "400": {
+                        "description": "Request is not from a stateful domain"
+                    },
                     "401": {
                         "description": "Invalid credentials"
                     },
@@ -400,14 +403,14 @@
                         "multipart/form-data": {
                             "schema": {
                                 "required": [
-                                    "title",
                                     "image",
                                     "status"
                                 ],
                                 "properties": {
                                     "title": {
                                         "type": "string",
-                                        "example": "Summer Special Offer"
+                                        "example": "Summer Special Offer",
+                                        "nullable": true
                                     },
                                     "description": {
                                         "type": "string",
@@ -1705,11 +1708,13 @@
                     },
                     "title": {
                         "type": "string",
-                        "example": "Summer Sale"
+                        "example": "Summer Sale",
+                        "nullable": true
                     },
                     "slug": {
                         "type": "string",
-                        "example": "summer-sale"
+                        "example": "summer-sale",
+                        "nullable": true
                     },
                     "description": {
                         "type": "string",

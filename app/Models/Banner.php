@@ -13,8 +13,8 @@ use OpenApi\Attributes as OA;
     description: "Banner model",
     properties: [
         new OA\Property(property: "id", type: "integer", example: 1),
-        new OA\Property(property: "title", type: "string", example: "Summer Sale"),
-        new OA\Property(property: "slug", type: "string", example: "summer-sale"),
+        new OA\Property(property: "title", type: "string", example: "Summer Sale", nullable: true),
+        new OA\Property(property: "slug", type: "string", example: "summer-sale", nullable: true),
         new OA\Property(property: "description", type: "string", example: "Get 50% discount on all hair styling services", nullable: true),
         new OA\Property(property: "image", type: "string", example: "http://localhost/storage/banners/image.jpg"),
         new OA\Property(property: "url", type: "string", example: "https://example.com/promo", nullable: true),
@@ -43,19 +43,32 @@ class Banner extends Model
         static::creating(function (Banner $banner) {
             if (! empty($banner->title)) {
                 $banner->slug = static::generateUniqueSlug($banner->title);
+            } else {
+                $banner->slug = null;
             }
         });
 
         static::updating(function (Banner $banner) {
             if ($banner->isDirty('title')) {
-                $banner->slug = static::generateUniqueSlug($banner->title, $banner->id);
+                $banner->slug = ! empty($banner->title)
+                    ? static::generateUniqueSlug($banner->title, $banner->id)
+                    : null;
             }
         });
     }
 
-    public static function generateUniqueSlug(string $title, ?int $ignoreId = null): string
+    public static function generateUniqueSlug(?string $title, ?int $ignoreId = null): ?string
     {
+        if (empty($title)) {
+            return null;
+        }
+
         $baseSlug = Str::slug($title);
+
+        if (empty($baseSlug)) {
+            return null;
+        }
+
         $slug = $baseSlug;
         $count = 2;
 

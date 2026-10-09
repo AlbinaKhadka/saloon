@@ -121,9 +121,9 @@ class BannerController extends Controller
             content: new OA\MediaType(
                 mediaType: 'multipart/form-data',
                 schema: new OA\Schema(
-                    required: ['title', 'image', 'status'],
+                    required: ['image', 'status'],
                     properties: [
-                        new OA\Property(property: 'title', type: 'string', example: 'Summer Special Offer'),
+                        new OA\Property(property: 'title', type: 'string', example: 'Summer Special Offer', nullable: true),
                         new OA\Property(property: 'description', type: 'string', nullable: true),
                         new OA\Property(property: 'image', description: 'Banner image file', type: 'string', format: 'binary'),
                         new OA\Property(property: 'url', description: 'Target link URL for the banner', type: 'string', nullable: true),
