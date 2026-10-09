@@ -47,11 +47,9 @@ class AuthController extends Controller
     )]
     public function login(LoginRequest $request): JsonResponse
     {
-        // Without a session the login would "succeed" but no cookie would be issued.
         if (! $request->hasSession()) {
-            return response()->json([
-                'message' => 'Request is not from a stateful domain. Check SANCTUM_STATEFUL_DOMAINS and the Origin/Referer header.',
-            ], 400);
+            $request->setLaravelSession(app('session')->driver());
+            $request->session()->start();
         }
 
         if (! Auth::attempt($request->validated())) {

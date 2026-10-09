@@ -55,18 +55,26 @@ class BannerApiTest extends TestCase
         ]);
     }
 
-    public function test_title_is_required_on_banner_creation(): void
+    public function test_banner_can_be_created_without_title(): void
     {
         Storage::fake('public');
         $user = User::factory()->create();
 
-        $this->actingAs($user, 'sanctum')
+        $response = $this->actingAs($user, 'sanctum')
             ->postJson('/api/v1/banners', [
                 'status' => 1,
                 'image'  => UploadedFile::fake()->image('banner.jpg'),
-            ])
-            ->assertStatus(422)
-            ->assertJsonValidationErrors(['title']);
+            ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('title', null)
+            ->assertJsonPath('slug', null);
+
+        $this->assertDatabaseHas('banners', [
+            'status' => 1,
+            'title'  => null,
+            'slug'   => null,
+        ]);
     }
 
     public function test_slug_auto_updates_when_title_changes(): void

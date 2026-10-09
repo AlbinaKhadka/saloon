@@ -13,10 +13,12 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'stateful' => explode(',', env(
+    'stateful' => array_values(array_unique(array_filter(array_map(function ($domain) {
+        return preg_replace('#^https?://#', '', rtrim(trim($domain), '/'));
+    }, explode(',', env(
         'SANCTUM_STATEFUL_DOMAINS',
         'localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,127.0.0.1:3000,::1,lumina-salon-weld.vercel.app,lumina-salon-nepal.vercel.app,saloon-rx72.onrender.com'
-    )),
+    )))))),
 
     /*
     |--------------------------------------------------------------------------
