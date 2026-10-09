@@ -53,20 +53,27 @@ class AuthController extends Controller
             ], 401);
         }
 
-        // Prevent session fixation
-        $request->session()->regenerate();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+        }
 
         return response()->json([
             'message' => 'Login successful',
-            'user' => new UserResource(Auth::user()),
+            'token' => $token,
+            'token_type' => 'Bearer',
+            'user' => new UserResource($user),
         ], 200);
     }
 
     #[OA\Post(
         path: '/api/logout',
         operationId: 'logout',
-        description: 'Log out the authenticated user and invalidate the session.',
-        security: [['cookieAuth' => []]],
+        description: 'Log out the authenticated user and invalidate token or session.',
+        security: [['cookieAuth' => []], ['bearerAuth' => []]],
         tags: ['Authentication'],
         responses: [
             new OA\Response(response: 200, description: 'Successfully logged out'),
@@ -75,6 +82,12 @@ class AuthController extends Controller
     )]
     public function logout(Request $request): JsonResponse
     {
+        $user = $request->user();
+
+        if ($user && method_exists($user, 'currentAccessToken') && $user->currentAccessToken()) {
+            $user->currentAccessToken()->delete();
+        }
+
         Auth::guard('web')->logout();
 
         if ($request->hasSession()) {

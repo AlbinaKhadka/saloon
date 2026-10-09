@@ -86,7 +86,7 @@
                 "tags": [
                     "Authentication"
                 ],
-                "description": "Log out the authenticated user and invalidate the session.",
+                "description": "Log out the authenticated user and invalidate token or session.",
                 "operationId": "logout",
                 "responses": {
                     "200": {
@@ -99,6 +99,9 @@
                 "security": [
                     {
                         "cookieAuth": []
+                    },
+                    {
+                        "bearerAuth": []
                     }
                 ]
             }
