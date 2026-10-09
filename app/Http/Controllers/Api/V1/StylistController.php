@@ -137,8 +137,8 @@ class StylistController extends Controller
     #[OA\Post(
         path: '/api/v1/stylists',
         operationId: 'storeStylist',
-        description: 'Create a new stylist with optional photo upload and assigned services',
-        security: [['cookieAuth' => []]],
+        description: 'Create a new stylist with optional photo upload and assigned services (slug is auto-generated from name)',
+        security: [['sanctumCookie' => []]],
         tags: ['Stylists'],
         requestBody: new OA\RequestBody(
             required: true,
@@ -148,7 +148,6 @@ class StylistController extends Controller
                     required: ['name', 'status'],
                     properties: [
                         new OA\Property(property: 'name', type: 'string', example: 'Jane Doe'),
-                        new OA\Property(property: 'slug', type: 'string', nullable: true, example: 'jane-doe'),
                         new OA\Property(property: 'designation', type: 'string', nullable: true, example: 'Senior Hair Stylist'),
                         new OA\Property(property: 'bio', type: 'string', nullable: true, example: 'Expert hair stylist with 5 years experience'),
                         new OA\Property(property: 'photo', description: 'Stylist photo file', type: 'string', format: 'binary', nullable: true),
@@ -207,7 +206,7 @@ class StylistController extends Controller
         path: '/api/v1/stylists/{stylist}',
         operationId: 'updateStylist',
         description: 'Update a stylist. We use POST with _method=PUT to support multipart/form-data for image uploads in PHP.',
-        security: [['cookieAuth' => []]],
+        security: [['sanctumCookie' => []]],
         tags: ['Stylists'],
         parameters: [
             new OA\Parameter(name: 'stylist', description: 'Stylist ID', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
@@ -221,7 +220,6 @@ class StylistController extends Controller
                     properties: [
                         new OA\Property(property: '_method', description: 'Method spoofing for PUT', type: 'string', example: 'PUT'),
                         new OA\Property(property: 'name', type: 'string', nullable: true),
-                        new OA\Property(property: 'slug', type: 'string', nullable: true),
                         new OA\Property(property: 'designation', type: 'string', nullable: true),
                         new OA\Property(property: 'bio', type: 'string', nullable: true),
                         new OA\Property(property: 'photo', description: 'Stylist photo file (optional on update)', type: 'string', format: 'binary', nullable: true),
@@ -284,7 +282,7 @@ class StylistController extends Controller
         path: '/api/v1/stylists/{stylist}',
         operationId: 'deleteStylist',
         description: 'Delete a stylist and remove associated photo',
-        security: [['cookieAuth' => []]],
+        security: [['sanctumCookie' => []]],
         tags: ['Stylists'],
         parameters: [
             new OA\Parameter(name: 'stylist', description: 'Stylist ID', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))

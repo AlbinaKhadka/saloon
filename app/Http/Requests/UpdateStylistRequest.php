@@ -19,12 +19,6 @@ class UpdateStylistRequest extends FormRequest
 
         return [
             'name'             => 'nullable|string|max:255',
-            'slug'             => [
-                'nullable',
-                'string',
-                'max:255',
-                Rule::unique('stylists', 'slug')->ignore($stylistId),
-            ],
             'designation'      => 'nullable|string|max:255',
             'bio'              => 'nullable|string',
             'photo'            => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',

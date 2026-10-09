@@ -15,7 +15,6 @@ class StoreStylistRequest extends FormRequest
     {
         return [
             'name'             => 'required|string|max:255',
-            'slug'             => 'nullable|string|max:255|unique:stylists,slug',
             'designation'      => 'nullable|string|max:255',
             'bio'              => 'nullable|string',
             'photo'            => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',

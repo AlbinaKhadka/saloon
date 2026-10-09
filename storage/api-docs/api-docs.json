@@ -1750,7 +1750,7 @@
                 "tags": [
                     "Stylists"
                 ],
-                "description": "Create a new stylist with optional photo upload and assigned services",
+                "description": "Create a new stylist with optional photo upload and assigned services (slug is auto-generated from name)",
                 "operationId": "storeStylist",
                 "requestBody": {
                     "required": true,
@@ -1765,11 +1765,6 @@
                                     "name": {
                                         "type": "string",
                                         "example": "Jane Doe"
-                                    },
-                                    "slug": {
-                                        "type": "string",
-                                        "example": "jane-doe",
-                                        "nullable": true
                                     },
                                     "designation": {
                                         "type": "string",
@@ -1857,7 +1852,7 @@
                 },
                 "security": [
                     {
-                        "cookieAuth": []
+                        "sanctumCookie": []
                     }
                 ]
             }
@@ -1929,10 +1924,6 @@
                                         "example": "PUT"
                                     },
                                     "name": {
-                                        "type": "string",
-                                        "nullable": true
-                                    },
-                                    "slug": {
                                         "type": "string",
                                         "nullable": true
                                     },
@@ -2016,7 +2007,7 @@
                 },
                 "security": [
                     {
-                        "cookieAuth": []
+                        "sanctumCookie": []
                     }
                 ]
             },
@@ -2050,7 +2041,7 @@
                 },
                 "security": [
                     {
-                        "cookieAuth": []
+                        "sanctumCookie": []
                     }
                 ]
             }

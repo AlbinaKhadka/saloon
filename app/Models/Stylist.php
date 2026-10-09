@@ -73,18 +73,14 @@ class Stylist extends Model
     protected static function booted(): void
     {
         static::creating(function (Stylist $stylist) {
-            if (! empty($stylist->name) && empty($stylist->slug)) {
+            if (! empty($stylist->name)) {
                 $stylist->slug = static::generateUniqueSlug($stylist->name);
-            } elseif (! empty($stylist->slug)) {
-                $stylist->slug = static::generateUniqueSlug($stylist->slug);
             }
         });
 
         static::updating(function (Stylist $stylist) {
-            if ($stylist->isDirty('name') && empty($stylist->slug)) {
+            if ($stylist->isDirty('name')) {
                 $stylist->slug = static::generateUniqueSlug($stylist->name, $stylist->id);
-            } elseif ($stylist->isDirty('slug') && ! empty($stylist->slug)) {
-                $stylist->slug = static::generateUniqueSlug($stylist->slug, $stylist->id);
             }
         });
     }
