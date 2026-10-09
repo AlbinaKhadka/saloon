@@ -255,4 +255,52 @@ class PublicApiDoc
         ]
     )]
     public function getGallery() {}
+
+    // Stylists (Public)
+
+    #[OA\Get(
+        path: '/api/v1/stylists',
+        operationId: 'getPublicStylists',
+        description: 'Fetch list of active stylists for the website (No auth required)',
+        tags: ['Public Stylists'],
+        parameters: [
+            new OA\Parameter(
+                name: 'search',
+                description: 'Search stylists by name or designation keyword',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'string')
+            ),
+            new OA\Parameter(
+                name: 'per_page',
+                description: 'Number of items per page',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'integer')
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Successful operation',
+                content: new OA\JsonContent(type: 'array', items: new OA\Items(ref: '#/components/schemas/Stylist'))
+            )
+        ]
+    )]
+    public function getStylists() {}
+
+    #[OA\Get(
+        path: '/api/v1/stylists/{stylist}',
+        operationId: 'getPublicStylist',
+        description: 'Get details of a single active stylist by ID (No auth required)',
+        tags: ['Public Stylists'],
+        parameters: [
+            new OA\Parameter(name: 'stylist', description: 'Stylist ID', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Successful operation', content: new OA\JsonContent(ref: '#/components/schemas/Stylist')),
+            new OA\Response(response: 404, description: 'Stylist not found or inactive')
+        ]
+    )]
+    public function getStylist() {}
 }

@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\ServiceCategoryController;
 use App\Http\Controllers\Api\V1\ServiceController;
 use App\Http\Controllers\Api\V1\AboutController;
 use App\Http\Controllers\Api\V1\GalleryController;
+use App\Http\Controllers\Api\V1\StylistController;
 
 use Illuminate\Support\Facades\Artisan;
 
@@ -43,6 +44,8 @@ Route::prefix('v1')->group(function () {
     Route::get('services/{service}', [ServiceController::class, 'show']);
     Route::get('galleries', [GalleryController::class, 'index']);
     Route::get('galleries/{gallery}', [GalleryController::class, 'show']);
+    Route::get('stylists', [StylistController::class, 'index']);
+    Route::get('stylists/{stylist}', [StylistController::class, 'show']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -59,5 +62,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('services', ServiceController::class)->except(['index', 'show']);
         Route::apiResource('abouts', AboutController::class);
         Route::apiResource('galleries', GalleryController::class)->except(['index', 'show']);
+        Route::apiResource('stylists', StylistController::class)->except(['index', 'show']);
+        Route::post('stylists/{stylist}', [StylistController::class, 'update']);
     });
 });

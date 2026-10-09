@@ -385,6 +385,85 @@
                     }
                 }
             }
+        },
+        "/api/v1/stylists": {
+            "get": {
+                "tags": [
+                    "Public Stylists"
+                ],
+                "description": "Fetch list of active stylists for the website (No auth required)",
+                "operationId": "getPublicStylists",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search stylists by name or designation keyword",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Stylist"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/stylists/{stylist}": {
+            "get": {
+                "tags": [
+                    "Public Stylists"
+                ],
+                "description": "Get details of a single active stylist by ID (No auth required)",
+                "operationId": "getPublicStylist",
+                "parameters": [
+                    {
+                        "name": "stylist",
+                        "in": "path",
+                        "description": "Stylist ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Stylist"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Stylist not found or inactive"
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -628,6 +707,89 @@
                 },
                 "type": "object"
             },
+            "Stylist": {
+                "title": "Stylist",
+                "description": "Stylist model",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Jane Doe"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "jane-doe",
+                        "nullable": true
+                    },
+                    "designation": {
+                        "type": "string",
+                        "example": "Senior Hair Stylist",
+                        "nullable": true
+                    },
+                    "bio": {
+                        "type": "string",
+                        "example": "Specialist in modern haircuts and coloring",
+                        "nullable": true
+                    },
+                    "photo": {
+                        "type": "string",
+                        "example": "http://localhost:8000/storage/stylists/jane.jpg",
+                        "nullable": true
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "+1234567890",
+                        "nullable": true
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "jane@example.com",
+                        "nullable": true
+                    },
+                    "experience_years": {
+                        "type": "integer",
+                        "example": 5,
+                        "nullable": true
+                    },
+                    "social_links": {
+                        "type": "object",
+                        "example": {
+                            "instagram": "https://instagram.com/jane",
+                            "facebook": "https://facebook.com/jane"
+                        },
+                        "nullable": true
+                    },
+                    "status": {
+                        "description": "0=hidden, 1=active",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "orderby": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "services": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Service"
+                        },
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
             "User": {
                 "title": "User",
                 "description": "User model",
@@ -677,6 +839,10 @@
         {
             "name": "Public Galleries",
             "description": "Public Galleries"
+        },
+        {
+            "name": "Public Stylists",
+            "description": "Public Stylists"
         }
     ]
 }

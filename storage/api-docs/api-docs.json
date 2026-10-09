@@ -1652,6 +1652,408 @@
                     }
                 ]
             }
+        },
+        "/api/v1/stylists": {
+            "get": {
+                "tags": [
+                    "Stylists"
+                ],
+                "description": "Get list of active stylists with optional search and pagination.",
+                "operationId": "getStylists",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search stylists by name or designation keyword",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Filter stylists by name keyword",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by status: 1 or \"active\", 0 or \"hidden\"",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page. If omitted, loads all matching active stylists.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Stylist List"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/Stylist"
+                                                    }
+                                                },
+                                                "page": {
+                                                    "type": "integer",
+                                                    "example": 1,
+                                                    "nullable": true
+                                                },
+                                                "total_page": {
+                                                    "type": "integer",
+                                                    "example": 1,
+                                                    "nullable": true
+                                                },
+                                                "total_items": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Stylists"
+                ],
+                "description": "Create a new stylist with optional photo upload and assigned services",
+                "operationId": "storeStylist",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "status"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Jane Doe"
+                                    },
+                                    "slug": {
+                                        "type": "string",
+                                        "example": "jane-doe",
+                                        "nullable": true
+                                    },
+                                    "designation": {
+                                        "type": "string",
+                                        "example": "Senior Hair Stylist",
+                                        "nullable": true
+                                    },
+                                    "bio": {
+                                        "type": "string",
+                                        "example": "Expert hair stylist with 5 years experience",
+                                        "nullable": true
+                                    },
+                                    "photo": {
+                                        "description": "Stylist photo file",
+                                        "type": "string",
+                                        "format": "binary",
+                                        "nullable": true
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+1234567890",
+                                        "nullable": true
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "jane@example.com",
+                                        "nullable": true
+                                    },
+                                    "experience_years": {
+                                        "type": "integer",
+                                        "example": 5,
+                                        "nullable": true
+                                    },
+                                    "social_links": {
+                                        "type": "object",
+                                        "example": {
+                                            "instagram": "https://instagram.com/jane"
+                                        },
+                                        "nullable": true
+                                    },
+                                    "status": {
+                                        "description": "0 = hidden, 1 = active",
+                                        "type": "integer",
+                                        "enum": [
+                                            0,
+                                            1
+                                        ]
+                                    },
+                                    "orderby": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
+                                    },
+                                    "service_ids": {
+                                        "description": "Array of service IDs to assign to this stylist",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Stylist created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Stylist"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/stylists/{stylist}": {
+            "get": {
+                "tags": [
+                    "Stylists"
+                ],
+                "description": "Get details of a single active stylist by ID",
+                "operationId": "getStylist",
+                "parameters": [
+                    {
+                        "name": "stylist",
+                        "in": "path",
+                        "description": "Stylist ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Stylist"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Stylist not found or inactive"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Stylists"
+                ],
+                "description": "Update a stylist. We use POST with _method=PUT to support multipart/form-data for image uploads in PHP.",
+                "operationId": "updateStylist",
+                "parameters": [
+                    {
+                        "name": "stylist",
+                        "in": "path",
+                        "description": "Stylist ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "status",
+                                    "_method"
+                                ],
+                                "properties": {
+                                    "_method": {
+                                        "description": "Method spoofing for PUT",
+                                        "type": "string",
+                                        "example": "PUT"
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "slug": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "designation": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "bio": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "photo": {
+                                        "description": "Stylist photo file (optional on update)",
+                                        "type": "string",
+                                        "format": "binary",
+                                        "nullable": true
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "nullable": true
+                                    },
+                                    "experience_years": {
+                                        "type": "integer",
+                                        "nullable": true
+                                    },
+                                    "social_links": {
+                                        "type": "object",
+                                        "nullable": true
+                                    },
+                                    "status": {
+                                        "description": "0 = hidden, 1 = active",
+                                        "type": "integer",
+                                        "enum": [
+                                            0,
+                                            1
+                                        ]
+                                    },
+                                    "orderby": {
+                                        "type": "integer",
+                                        "nullable": true
+                                    },
+                                    "service_ids": {
+                                        "description": "Array of service IDs to assign (omit to preserve existing, pass empty array [] to clear)",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Stylist updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Stylist"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Stylist not found"
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Stylists"
+                ],
+                "description": "Delete a stylist and remove associated photo",
+                "operationId": "deleteStylist",
+                "parameters": [
+                    {
+                        "name": "stylist",
+                        "in": "path",
+                        "description": "Stylist ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Stylist deleted successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Stylist not found"
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -1895,6 +2297,89 @@
                 },
                 "type": "object"
             },
+            "Stylist": {
+                "title": "Stylist",
+                "description": "Stylist model",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Jane Doe"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "jane-doe",
+                        "nullable": true
+                    },
+                    "designation": {
+                        "type": "string",
+                        "example": "Senior Hair Stylist",
+                        "nullable": true
+                    },
+                    "bio": {
+                        "type": "string",
+                        "example": "Specialist in modern haircuts and coloring",
+                        "nullable": true
+                    },
+                    "photo": {
+                        "type": "string",
+                        "example": "http://localhost:8000/storage/stylists/jane.jpg",
+                        "nullable": true
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "+1234567890",
+                        "nullable": true
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "jane@example.com",
+                        "nullable": true
+                    },
+                    "experience_years": {
+                        "type": "integer",
+                        "example": 5,
+                        "nullable": true
+                    },
+                    "social_links": {
+                        "type": "object",
+                        "example": {
+                            "instagram": "https://instagram.com/jane",
+                            "facebook": "https://facebook.com/jane"
+                        },
+                        "nullable": true
+                    },
+                    "status": {
+                        "description": "0=hidden, 1=active",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "orderby": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "services": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Service"
+                        },
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
             "User": {
                 "title": "User",
                 "description": "User model",
@@ -1960,6 +2445,10 @@
         {
             "name": "Services",
             "description": "Services"
+        },
+        {
+            "name": "Stylists",
+            "description": "Stylists"
         }
     ]
 }
